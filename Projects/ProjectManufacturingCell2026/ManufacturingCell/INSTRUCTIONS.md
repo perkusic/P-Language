@@ -1,6 +1,6 @@
 # Manufacturing cell: instructions
 
-A robot arm and an AGV share one work envelope (resource `0`, capacity 1). A single cell controller regiments access to it, and one organizational engine manages job obligations. A maintenance technician triggers a **lock-out adaptation** before entering the cell.
+A robot arm and an AGV alternate use of **resource 0, a shared transfer zone of capacity 1**. The robot base and retracted moving parts are outside the zone. The AGV approaches from an external route, waits outside, deposits/collects material at a fixed stand and fully exits before release. A technician intervenes at the stand only after logical admission closure. This scenario excludes maintenance of the robot, battery charging and physical energy isolation. See specification Section 6 and Figure 1 for the geometry and event contract.
 
 > **Verification status.** Nothing in this guide has been confirmed by running P or PObserve yet. The P files have not been compiled, and the Java parser has not been built (it depends on classes that `p compile --mode pobserve` generates). Every "expected" result below is a hypothesis. The only results actually produced so far come from the Python mirror of the monitors (`tools/simulate_logs.py --check`), recorded in section 5. Fill in the validation record there as you confirm each step.
 >
@@ -108,7 +108,7 @@ Expected results (first schedules observed in the independent evaluation, sectio
 | Test | Expected | Meaning |
 |---|---|---|
 | `tcCellTwoPhase` | no bug found | The regulation design is safe under every explored interleaving |
-| `tcCellNaive` | bug found in `RegimentationSafety` or `NoStaleAdmission` | The technician is admitted while the arm is still in the envelope, or the controller admits an agent to a resource that the committed norm set closes |
+| `tcCellNaive` | bug found in `RegimentationSafety` or `NoStaleAdmission` | The technician is admitted while the arm is still in the transfer zone, or the controller admits an agent to a resource that the committed norm set closes |
 
 `NoStaleAdmission` (S2) is a closure property, not a check of strict version equality: an admission recorded under an older version is accepted if the committed norm set does not close that resource (confirmed by the probe `tcStaleOpenZone` of the independent evaluation, [`probe-stale.txt`](https://github.com/perkusic/P-Language/blob/main/reviews/evaluation-2026-10-21/probe-stale.txt)). Requiring every admission to carry the committed version would be a separate, stronger property that needs its own justification in the protocol.
 
@@ -125,7 +125,7 @@ The ids refer to the experiment table in section 7.3 of the specification, which
 
 | Id | Change | Where | What to look for |
 |---|---|---|---|
-| E3 | Agents never release the envelope (remove the `send guard, eRelease` in `Working`) | `PSrc/CellAgent.p` | `AdaptationCompletes` (L2) fails: the lock-out can never drain. This argues for a physical e-stop below the MAS |
+| E3 | Agents never release the transfer zone (remove the `send guard, eRelease` in `Working`) | `PSrc/CellAgent.p` | `AdaptationCompletes` (L2) fails: the lock-out can never drain. A physical stop may mitigate a movement hazard, but does not clear the zone or complete L2; no release may be invented |
 | E5 | Shorter deadlines (`due = 2`) | `ManufacturingSystem` | More sanctions; `EveryObligationResolved` (L1) must still hold |
 | E4 | Two technicians (a challenge, not a check of existing behavior) | add a second `HumanRequester` | See 2.5 |
 
@@ -142,7 +142,7 @@ The coordinator defers a new trigger while an adaptation is in progress, so adap
 
 Serialization orders the norm-set changes, but nothing tracks who is still inside. To fix it:
 - **Track human presence.** The coordinator keeps the set of technicians who hold a lock-out on each resource, and reopens only when the last one leaves.
-- **Verify it.** Add a monitor for property S4 of the specification, "no committed norm set opens a resource while a human is inside" (observe `eHumanEntered`, `eHumanLeft`, `eNormCommitted`), and check that it fails before your fix and holds after. The events carry only a resource id, so S4 must count the people inside each resource, as `RegimentationSafety` does, rather than record a set of occupied resources: with a set, the exit of A would make the envelope look empty while B is inside. Also run it against a mutant (specification section 5.11) to show it is not vacuous.
+- **Verify it.** Add a monitor for property S4 of the specification, "no committed norm set opens a resource while a human is inside" (observe `eHumanEntered`, `eHumanLeft`, `eNormCommitted`), and check that it fails before your fix and holds after. The events carry only a resource id, so S4 must count the people inside each resource, as `RegimentationSafety` does, rather than record a set of occupied resources: with a set, the exit of A would make the transfer zone look empty while B is inside. Also run it against a mutant (specification section 5.11) to show it is not vacuous.
 
 ---
 
@@ -174,6 +174,8 @@ Every component that takes part in regulation writes **one line per event**:
 | `HUMAN_ENTER` / `HUMAN_LEAVE` | `Res` | door switch / light curtain | `eHumanEntered` / `eHumanLeft` |
 | `ADAPT_ABORT` | `Ver` | adaptation engine (only with an abort, E8) | `eAdaptationAborted` |
 | `ABANDON` | `Id, Agent, Where` | agent (gave up a job after repeated denials) | none: ignored by the cell parser; present in the sample logs for an optional fairness analysis (E7) |
+
+**Admission and clearance contract.** `ENTER` records the controller's exclusive reservation before the grant, not a sensor-confirmed crossing. The reservation must cover the full traversal and work. Emit `LEAVE` only after confirming that the AGV has fully exited resource 0 or the arm's moving parts have retracted outside it; a stopped pose still inside does not count. The guard's preparation acknowledgement inherits this clearance assumption. Log `HUMAN_ENTER`/`HUMAN_LEAVE` on confirmed crossings of resource 0, not merely the cell door or a badge swipe. `COMMIT` records the coordinator's logical decision, not completed installation at the guard and not physical energy isolation. The P model abstracts motion/sensors; premature `LEAVE` events invalidate the physical interpretation of a clean monitoring result.
 
 Rules:
 - Ids are integers.
@@ -272,7 +274,7 @@ python3 ../../tools/simulate_logs.py --scenario cell --policy naive --seed 7 --t
   - the safety interlock (`humanEnter`/`humanLeave`)
   
   Route the output to a file, keeping the ` - : ` separator.
-- **PLC / OPC UA.** Emit the same lines from the gateway that logs door switches and envelope occupancy.
+- **PLC / OPC UA.** Emit the same lines from the gateway that logs door switches and transfer zone occupancy.
 - Log `CONFIG` once at start-up. `RegimentationSafety` starts by reading the capacities.
 
 ### 3.9 Log assumptions and limitations
@@ -283,18 +285,18 @@ The run-time results are only as good as the log. The monitors assume:
 
 **The two bounds:**
 - `ObligationDeadlineRespected` uses a grace of **1 tick**. The obligation engine sanctions at the first tick where `now > Due`, and logs the `SANCTION` *after* that `TICK` line. So an obligation due at tick *d* is resolved by tick *d+1* at the latest, and the monitor complains at tick *d+2*. One tick is the smallest grace that does not raise false alarms; in 500 simulated runs every sanction came exactly one tick after its due time. Raise it if your engine checks deadlines less often than every tick.
-- `AdaptationBoundedTime` allows **5 ticks** from `ADAPT_START` to `COMMIT`. This is a design choice, not derived from the model: draining the envelope takes as long as the agent inside stays there. **The simulator already exceeds it**: in 500 simulated two-phase cell runs, 9 of 5,180 adaptations took 6 to 8 ticks, so longer two-phase logs can fail this monitor although the design is safe. The property (R2 in the specification) holds only if the bound is at least the maximum observed start-to-commit duration. Calibrate it by measuring, for each completed adaptation, the time from `ADAPT_START` to `COMMIT` (protocol delay included), not the drain time alone, and record why the chosen bound suffices (e.g., maximum job time in the envelope plus the controller's reaction time). An observed maximum is empirical, not a bound for all executions: the independent evaluation found 9 of 5,180 completed adaptations above 5 ticks, with a maximum of 8 ([`python-verification.json`](https://github.com/perkusic/P-Language/blob/main/reviews/evaluation-2026-10-21/python-verification.json)).
+- `AdaptationBoundedTime` allows **5 ticks** from `ADAPT_START` to `COMMIT`. This is a design choice, not derived from the model: draining the transfer zone takes as long as the agent inside stays there. **The simulator already exceeds it**: in 500 simulated two-phase cell runs, 9 of 5,180 adaptations took 6 to 8 ticks, so longer two-phase logs can fail this monitor although the design is safe. The property (R2 in the specification) holds only if the bound is at least the maximum observed start-to-commit duration. Calibrate it by measuring, for each completed adaptation, the time from `ADAPT_START` to `COMMIT` (protocol delay included), not the drain time alone, and record why the chosen bound suffices (e.g., maximum job time in the transfer zone plus the controller's reaction time). An observed maximum is empirical, not a bound for all executions: the independent evaluation found 9 of 5,180 completed adaptations above 5 ticks, with a maximum of 8 ([`python-verification.json`](https://github.com/perkusic/P-Language/blob/main/reviews/evaluation-2026-10-21/python-verification.json)).
 
 **Bounded monitors need later ticks.** Both bounded monitors check only when a `TICK` arrives. If the log ends before tick *d+2* (or 5 ticks after `ADAPT_START`), an unresolved obligation or adaptation is simply not reported. A clean result on a log that stops early does not show that work completed.
 
 **Restarts.** `CONFIG` must come first for each site. `RegimentationSafety` handles `CONFIG` only in its initial state, so a second `CONFIG` after a restart is an event the monitor does not handle. P treats that as an error. Monitor state (occupancy, committed norm set, open obligations) is also not reset. Split logs at restarts and check each segment separately.
 
-**Missing and duplicate events** are *log defects*: the log misrepresents what the system did. They differ from *system faults*, where the system misbehaves and the log records it faithfully (e.g., a `COMMIT` before the envelope has drained); a monitor should report a system fault, whereas a log defect produces false results, in both directions:
+**Missing and duplicate events** are *log defects*: the log misrepresents what the system did. They differ from *system faults*, where the system misbehaves and the log records it faithfully (e.g., a `COMMIT` before the transfer zone has drained); a monitor should report a system fault, whereas a log defect produces false results, in both directions:
 
 | Problem | Effect |
 |---|---|
 | missing `LEAVE` | occupancy never drops: a later `ENTER` is reported as a capacity violation, a later `HUMAN_ENTER` as an unsafe entry |
-| missing `ENTER` (e.g. the log starts while the arm is in the envelope) | occupancy goes negative (every configured resource starts at 0) and hides real capacity violations |
+| missing `ENTER` (e.g. the log starts while the arm is in the transfer zone) | occupancy goes negative (every configured resource starts at 0) and hides real capacity violations |
 | missing `COMMIT` | the next `COMMIT` fails the version-order check; `LockoutBeforeEntry` may report a bypass that did not happen |
 | missing `TICK` | bounded monitors cannot fire for that period |
 | duplicate `ENTER` | false capacity violation |

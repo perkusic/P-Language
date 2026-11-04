@@ -1,6 +1,6 @@
 # Verified Regulation Management for a Manufacturing Cell (P + PObserve)
 
-Starter kit for the graduate project. A robot arm and an AGV share one work envelope, and a technician needs a lock-out before entering. Regulation is **centralized**: one cell controller and one organizational engine.
+Starter kit for the graduate project. An AGV and a robot arm alternate reservations of one shared transfer zone (resource 0, capacity 1). The robot base and retracted moving parts stay outside it; the AGV waits externally and clears it before release. A technician requests logical admission closure to intervene at the material stand. Robot maintenance, battery charging and physical energy isolation are outside the model. Regulation is **centralized**: one cell controller and one organizational engine.
 
 **The assignment** (goals, 45-day schedule, deliverables, grading) is in [`ASSIGNMENT.md`](ASSIGNMENT.md). It summarizes section 8 of the specification, which is authoritative where the two differ. The two-technician property that teams add is named S4 in both documents.
 ## Specification

@@ -4,7 +4,7 @@ Graduate project · teams of 3 · 45 days
 
 ## Goal
 
-A robot arm and an AGV share a work envelope, and a technician needs it locked out before entering. Starting from the model in this kit, your team will:
+A robot arm and an AGV alternate access to resource 0, a shared transfer zone. The base and retracted arm are outside the zone; the AGV deposits or collects material at a fixed stand and clears it before the arm uses it. The technician intervenes at that stand after logical closure, not on the robot itself. Follow the physical interpretation and release contract in specification Section 6. Starting from the model in this kit, your team will:
 
 1. reproduce the baseline results with the P checker,
 2. explain why the naive adaptation is unsafe, from a counterexample you found yourselves,
