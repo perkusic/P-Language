@@ -9,7 +9,7 @@ Two robots deliver through a narrow corridor in opposite directions:
 
 A human picker needs zone 1, which must first be **closed to robots** (adaptation). Both robots start outside the corridor and enter at its ends. A robot keeps its zone until the next one is granted. After 3 denials it parks in a side bay and abandons the delivery, and the organization then sanctions it. The bay is not modeled: parking only releases the zone, which assumes a free bay reachable from every zone (`SPECIFICATION.md`, Section 7.6).
 
-> **Verification status.** The independent evaluations of 21 October 2026 (`reviews/evaluation-2026-10-21`) and 4 November 2026 (`reviews/evaluation-2026-11-04`) compiled the P files and ran the first schedules of the three test cases (section 5). The Java parser has not been built and PObserve has not been run. Every other "expected" result below is a hypothesis. The only results actually produced so far come from the Python mirror of the monitors (`tools/simulate_logs.py --check`), recorded in section 5. Fill in the validation record there as you confirm each step.
+> **Verification status.** The independent evaluations of 21 October 2026 (`reviews/evaluation-2026-10-21`) and 4 November 2026 (`reviews/evaluation-2026-11-04`) compiled the P files and ran the first schedules of the three test cases (section 5). The Java parser has not been built and PObserve has not been run. Every other "expected" result below is a hypothesis. Section 5 keeps three kinds of result apart: P checker and compiler runs from those evaluations; verdicts on the two sample logs, which so far come only from the Python mirror of the monitors (`tools/simulate_logs.py --check`), not from PObserve; and the PObserve build and replay, not yet run. Fill in the validation record there as you confirm each step.
 
 Grid cell (Yan et al., COINE 2025): **hybrid (environment + organization)**, with responsibilities split as follows. The robots are regulated agents; they do not manage the norms.
 
@@ -279,7 +279,7 @@ The run-time results are only as good as the log. The monitors assume:
 
 Fill this in as you confirm each step. Until a row has a command, versions and actual output, treat its result as expected, not verified.
 
-**Done so far: Python mirror only** (Python 3.13, 2026-10-20). Run from `MobileRobots/pobserve`:
+**Python mirror on the sample logs** (Python 3.13, 2026-10-20; these verdicts come from the mirror, not from P or PObserve). Run from `MobileRobots/pobserve`:
 
 ```text
 $ python3 ../../tools/simulate_logs.py --scenario fleet --policy twophase --seed 1 --ticks 60 --out src/test/resources/fleet_twophase.log --check

@@ -1,3 +1,5 @@
+> **Historical record, not a reproduction guide.** This is the Codex's note as written in the private review folder (`reviews/robot-review-2026-11-04/VALIDATION.md`), kept unchanged below this box (original SHA-256 `fcfd03425d00afc03db287afda128260dfb9c471855c93ed4aae31231ff71f62`). It refers to files that are not in the repository: `snapshot.json`, `prepare_review.py`, `inspect_documents.py`, `check_snapshot.py`, `validation/checks.json` and the copy `validation/project-copy/`. To reproduce the runs from a fresh clone, follow [`REPRODUCE.md`](REPRODUCE.md); the outputs are in [`evidence/`](evidence/).
+
 # Reprodução das verificações
 
 Ambiente: P 3.1.0.0, .NET SDK 8.0.427, Python 3.14.4,

@@ -19,4 +19,8 @@ Run by the Codex during the joint review of the robot fleet (`reviews/robot-revi
 
 ## Not run
 
-Java/Gradle build, JUnit, PObserve replay, the 100,000-schedule acceptance run of E1, the extensions E4–E10, physical tests. The commands in `VALIDATION.md` refer to the review folder layout (`validation/...`); in this folder the same files are under `evidence/`. Replaying a counterexample requires `p check --replay <file>.schedule` on the same model; the replay was not run.
+Java/Gradle build, JUnit, PObserve replay, the 100,000-schedule acceptance run of E1, the extensions E4–E10, physical tests. Replaying a counterexample requires `p check --replay <file>.schedule` on the same model; the replay was not run.
+
+## Reproducing
+
+[`REPRODUCE.md`](REPRODUCE.md) gives the steps from a fresh clone: an isolated worktree at the evaluated revision, the baseline runs, and the probe built with [`prepare_probe.py`](prepare_probe.py). [`VALIDATION-review-folder.md`](VALIDATION-review-folder.md) is the reviewer's original note; it refers to files of the private review folder that are not in the repository and is kept as a record only.
