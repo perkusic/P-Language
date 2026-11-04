@@ -1,5 +1,7 @@
 # Verified Regulation Management for a Manufacturing Cell (P + PObserve)
 
+**Questions about this project?** Read the [Manufacturing Cell Student FAQ](../../faq/manufacturing-cell.html) (source on GitHub: [`docs/faq/manufacturing-cell.md`](https://github.com/perkusic/P-Language/blob/main/docs/faq/manufacturing-cell.md)).
+
 Graduate project specification · Oct 20, 2026 · Angelo
 
 ## Repository and access
