@@ -4,9 +4,13 @@
 //
 // Robot 1 delivers 0 -> 1 -> 2 and robot 2 delivers 2 -> 1 -> 0 (head-on).
 // A human picker needs zone 1, which must be closed to robots first.
+// Both robots start outside the corridor (pos = -1) and enter at its ends.
 // A robot keeps its current zone until the next one is granted (it cannot
 // vanish). After 3 denials it parks in a side bay, releasing its zone, and
 // abandons the task. The organization then sanctions it.
+// Not modeled: stations, loads, batteries, return trips, and the bay itself.
+// Parking is modeled only as releasing the zone, which ASSUMES a free bay
+// reachable from every zone (SPECIFICATION.md, Section 7.6).
 fun Z0(): int { return 0; }
 fun Z1(): int { return 1; }
 fun Z2(): int { return 2; }
@@ -70,7 +74,7 @@ machine Robot {
         } else {
           announce eTaskAbandoned, (id = job.id, agent = id, where = -1);
         }
-        ReleaseCurrent();      // park in a side bay, abandon the task
+        ReleaseCurrent();      // park in a side bay (not modeled: assumed free and reachable), abandon the task
         goto Idle;
       }
     }
