@@ -1,0 +1,115 @@
+Total event coverage: 55.0%
+===========================
+StateMachine: AdaptationCoordinator
+===================================
+Event coverage: 0.0%
+
+	State: Init
+		State has no expected events, so coverage is 100%
+		Next states: Stable
+
+	State: Stable is uncovered
+		Events not covered: eAdaptationTriggered
+		Previous states: Init
+
+	State: Preparing is uncovered
+		Events not covered: eNormPrepareAck
+
+	State: Committing
+		State has no expected events, so coverage is 100%
+
+StateMachine: Clock
+===================
+Event coverage: 100.0%
+
+	State: Init
+		State has no expected events, so coverage is 100%
+		Next states: Ticking
+
+	State: Ticking
+		State event coverage: 100.0%
+		Events received: eContinue
+		Events sent: eContinue, eTick
+		Previous states: Init, Ticking
+		Next states: Stopped, Ticking
+
+	State: Stopped
+		State has no expected events, so coverage is 100%
+		Previous states: Ticking
+
+StateMachine: FleetSystem
+=========================
+Event coverage: 100.0%
+
+	State: Init
+		State has no expected events, so coverage is 100%
+		Events sent: eAssignTask
+
+StateMachine: ObligationManager
+===============================
+Event coverage: 100.0%
+
+	State: Active
+		State event coverage: 100.0%
+		Events received: eAssignTask, eReportFulfilled, eTick
+		Events sent: eObligationNotice, eSanction
+
+StateMachine: ResourceGuard
+===========================
+Event coverage: 22.2%
+
+	State: Init
+		State has no expected events, so coverage is 100%
+		Next states: Open
+
+	State: Open
+		State event coverage: 50.0%
+		Events received: eAccessRequest, eRelease
+		Events sent: eAccessDenied, eAccessGranted
+		Events not covered: eNormCommit, eNormPrepare
+		Previous states: Init
+
+	State: Draining is uncovered
+		Events not covered: eAccessRequest, eRelease
+
+	State: AwaitCommit is uncovered
+		Events not covered: eAccessRequest, eNormCommit, eRelease
+
+StateMachine: Robot
+===================
+Event coverage: 100.0%
+
+	State: Init
+		State has no expected events, so coverage is 100%
+		Next states: Idle
+
+	State: Idle
+		State event coverage: 100.0%
+		Events received: eObligationNotice
+		Previous states: Init, Moving
+		Next states: Moving
+
+	State: Moving
+		State event coverage: 100.0%
+		Events received: eAccessDenied, eAccessGranted
+		Events sent: eAccessRequest, eRelease, eReportFulfilled
+		Previous states: Idle, Moving
+		Next states: Idle, Moving
+
+Monitor: SanctionsReflectMisconduct
+===================================
+Event coverage: 100.0%
+
+	State: Watching
+		State event coverage: 100.0%
+		Events received: eSanctionApplied, eTaskAbandoned
+		Previous states: Watching
+		Next states: Watching
+
+StateMachine: TestFleetTwoPhase
+===============================
+Event coverage: 100.0%
+
+	State: Init
+		State has no expected events, so coverage is 100%
+

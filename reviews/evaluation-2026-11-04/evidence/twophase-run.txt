@@ -1,0 +1,51 @@
+.. Searching for a P project file *.pproj locally in the current folder
+.. Found P project file: C:\Users\Angel\P-Language\reviews\robot-review-2026-11-04\validation\project-copy\MobileRobots\MobileRobots.pproj
+.. Searching for a P compiled file locally in folder ./PGenerated/
+.. Found a P compiled file: ./PGenerated/PChecker\net8.0\MobileRobots.dll
+.. Checking ./PGenerated/PChecker\net8.0\MobileRobots.dll
+.. Running test cases with prefix 'tcFleetTwoPhase':
+tcFleetTwoPhase
+.. Test case :: tcFleetTwoPhase
+... Checker is using 'random' strategy (seed:2).
+..... Schedule #1
+..... Schedule #2
+..... Schedule #3
+..... Schedule #4
+..... Schedule #5
+..... Schedule #6
+..... Schedule #7
+..... Schedule #8
+..... Schedule #9
+..... Schedule #10
+..... Schedule #20
+..... Schedule #30
+..... Schedule #40
+..... Schedule #50
+..... Schedule #60
+..... Schedule #70
+..... Schedule #80
+..... Schedule #90
+..... Schedule #100
+..... Schedule #200
+..... Schedule #300
+..... Schedule #400
+..... Schedule #500
+..... Schedule #600
+..... Schedule #700
+..... Schedule #800
+..... Schedule #900
+..... Schedule #1000
+..... Schedule #2000
+... Emitting coverage report:
+..... Writing ../../twophase-output\BugFinding\MobileRobots.coverage.txt
+..... Writing ../../twophase-output\BugFinding\MobileRobots.sci
+... Checking statistics:
+..... Found 0 bugs.
+... Scheduling statistics:
+..... Explored 2659 schedules
+..... Explored 57 timelines
+..... Number of scheduling points in terminating schedules: 166 (min), 171 (avg), 187 (max).
+..... Writing ../../twophase-output\BugFinding\MobileRobots_pchecker_summary.txt
+... Elapsed 30.0153454 sec.
+. Done
+~~ [PTool]: Thanks for using P! ~~

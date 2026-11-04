@@ -1759,7 +1759,7 @@ spec SanctionsReflectMisconduct observes eTaskAbandoned, eSanctionApplied {
 <td>E6</td>
 <td>Traffic norm (remedy 1): one travel direction at a time</td>
 <td>Does the norm eliminate head-on conflicts, and which flagged sanctions remain?</td>
-<td>no head-on wait-for cycle and no head-on-caused case; flagged sanctions caused by same-direction congestion or by waiting at the entrance remain possible with the three-immediate-retries policy (a two-robot same-direction probe of the review of 4 November 2026 produced one)</td>
+<td>no head-on wait-for cycle and no head-on-caused case; flagged sanctions caused by same-direction congestion or by waiting at the entrance remain possible with the three-immediate-retries policy (a two-robot same-direction probe of the review of 4 November 2026 produced one; evidence in <code>reviews/evaluation-2026-11-04</code>)</td>
 <td>refined monitor reports no head-on-caused case and classifies the remaining traffic cases; all safety monitors hold</td>
 <td>10,000</td>
 <td>refined-monitor output; safety results</td>
@@ -2375,12 +2375,12 @@ spec SanctionsReflectMisconduct observes eTaskAbandoned, eSanctionApplied {
 <tbody><tr>
 <td><code>Common/*.p</code></td>
 <td>shared model machines and monitors</td>
-<td>compiles with P 3.1.0.0, without warnings (21 October 2026); later changes (the L3 monitor and the S1, L2 and R2 corrections) are not yet compiled</td>
+<td>compiles with P 3.1.0.0, without warnings (21 October 2026, and again on 4 November 2026 including the L3 monitor and the S1, L2 and R2 corrections)</td>
 </tr>
 <tr>
 <td><code>MobileRobots/PSrc</code>, <code>PSpec</code>, <code>PTst</code></td>
 <td>robots, system configuration, fairness monitor, test cases</td>
-<td>compiles with P 3.1.0.0 (21 October 2026); the three test cases run as expected (see below)</td>
+<td>compiles with P 3.1.0.0 (21 October and 4 November 2026); the three test cases run as expected (see below)</td>
 </tr>
 <tr>
 <td><code>MobileRobots/pobserve/</code></td>
@@ -2404,6 +2404,7 @@ spec SanctionsReflectMisconduct observes eTaskAbandoned, eSanctionApplied {
 </tr>
 </tbody></table>
 <p><strong>Independent evaluation, 21 October 2026</strong> (P 3.1.0.0, .NET SDK 8.0.426, OpenJDK 17.0.20.8). <code>p compile</code> succeeds without warnings. <code>tcFleetNaive</code> violates S2 on the first schedule (robot 2 is admitted under v0 to zone 1, which v1 closes). <code>tcFleetSanctionFairness</code> violates F1 on the first schedule, as intended. <code>tcFleetTwoPhase</code> reports no bug in 3,442 schedules within a 30-second run; this is not the 100,000-schedule acceptance run of experiment E1. <code>p compile --mode pobserve</code> generates the Java classes; the Java build, the JUnit tests and the PObserve replay have not yet been run, because neither Gradle nor Maven was installed and no wrapper is committed. Evidence: <a href="https://github.com/perkusic/P-Language/tree/main/reviews/evaluation-2026-10-21">reviews/evaluation-2026-10-21</a>.</p>
+<p><strong>Independent evaluation, 4 November 2026</strong> (P 3.1.0.0, .NET SDK 8.0.427, OpenJDK 17.0.20+8; random strategy, seed 2), on revision <code>4e20e5f</code>, whose executable P code is identical to the current kit. <code>p compile</code> succeeds without warnings, now including the L3 monitor and the S1, L2 and R2 corrections. <code>tcFleetNaive</code> violates S2 on the first schedule (robot 1 is admitted under v0 to zone 1, which v1 closes). <code>tcFleetSanctionFairness</code> violates F1 on the fifth schedule, as intended. <code>tcFleetTwoPhase</code> reports no bug in 2,659 schedules within a 30-second run, again not the acceptance run of E1. A probe in which both robots travel 0 → 1 → 2 and no picker is created violates F1 on the 17th schedule, with no closure and no head-on conflict; this is the evidence behind the limited prediction of experiment E6. <code>p compile --mode pobserve</code> generates the Java classes; the Java build, the JUnit tests and the PObserve replay were not run (Gradle absent). Evidence: <a href="https://github.com/perkusic/P-Language/tree/main/reviews/evaluation-2026-11-04">reviews/evaluation-2026-11-04</a>.</p>
 <p><strong>Required environment:</strong></p>
 <ul>
 <li>.NET SDK 8.0, followed by <code>dotnet tool install --global P</code>;</li>

@@ -9,7 +9,7 @@ Two robots deliver through a narrow corridor in opposite directions:
 
 A human picker needs zone 1, which must first be **closed to robots** (adaptation). Both robots start outside the corridor and enter at its ends. A robot keeps its zone until the next one is granted. After 3 denials it parks in a side bay and abandons the delivery, and the organization then sanctions it. The bay is not modeled: parking only releases the zone, which assumes a free bay reachable from every zone (`SPECIFICATION.md`, Section 7.6).
 
-> **Verification status.** The independent evaluation of 21 October 2026 (`reviews/evaluation-2026-10-21`) compiled the P files and ran the first schedules of the three test cases (section 5). The Java parser has not been built and PObserve has not been run. Every other "expected" result below is a hypothesis. The only results actually produced so far come from the Python mirror of the monitors (`tools/simulate_logs.py --check`), recorded in section 5. Fill in the validation record there as you confirm each step.
+> **Verification status.** The independent evaluations of 21 October 2026 (`reviews/evaluation-2026-10-21`) and 4 November 2026 (`reviews/evaluation-2026-11-04`) compiled the P files and ran the first schedules of the three test cases (section 5). The Java parser has not been built and PObserve has not been run. Every other "expected" result below is a hypothesis. Section 5 keeps three kinds of result apart: P checker and compiler runs from those evaluations; verdicts on the two sample logs, which so far come only from the Python mirror of the monitors (`tools/simulate_logs.py --check`), not from PObserve; and the PObserve build and replay, not yet run. Fill in the validation record there as you confirm each step.
 
 Grid cell (Yan et al., COINE 2025): **hybrid (environment + organization)**, with responsibilities split as follows. The robots are regulated agents; they do not manage the norms.
 
@@ -130,7 +130,7 @@ The experiment ids match section 7.3 of the specification, which also defines E0
 |---|---|---|---|
 | E4 | Block **all** zone controllers during prepare (drop the "unaffected guard acks at once" branch) | `Common/ResourceGuard.p`, `Open.eNormPrepare` | Drain now depends on parking. A robot in zone 1 cannot advance to a blocked zone 2. Remove parking as well and `AdaptationCompletes` should fail |
 | E5 | Remove parking (retry forever) | `PSrc/Robot.p`, `eAccessDenied` | Head-on hold-and-wait: robots in zones 1 and 2 wait for each other forever. Expect `AdaptationCompletes` to fail when zone 1 must drain |
-| E6 | Add a traffic norm: one direction per corridor (e.g. a `DirectionGuard` granting the corridor to one direction at a time) | new machine | Head-on conflicts should disappear. `SanctionsReflectMisconduct` can still fail after same-direction congestion or a wait at the entrance, because a robot retries three times without waiting (a two-robot same-direction probe of the review of 4 November 2026 shows this). Classify each remaining failure in the trace; the monitor itself does not record the cause. Changing the retry policy (waiting k ticks, or waiting for a release) is an extension with its own prediction |
+| E6 | Add a traffic norm: one direction per corridor (e.g. a `DirectionGuard` granting the corridor to one direction at a time) | new machine | Head-on conflicts should disappear. `SanctionsReflectMisconduct` can still fail after same-direction congestion or a wait at the entrance, because a robot retries three times without waiting (a two-robot same-direction probe of the review of 4 November 2026 shows this; evidence in `reviews/evaluation-2026-11-04`). Classify each remaining failure in the trace; the monitor itself does not record the cause. Changing the retry policy (waiting k ticks, or waiting for a release) is an extension with its own prediction |
 | E7 | Suspend deadlines while the regulation blocks an agent | `ObligationManager` | Expected: `SanctionsReflectMisconduct` still fails, because an abandoned obligation is still sanctioned when it falls due; it holds for regulation-caused cases only if abandoned obligations are also excused. To be confirmed with `p check` |
 | E10 (optional) | Model the side bays: one `ResourceGuard` per bay (ids 3–5), never closed. Add the bays to the capacity map announced with `eMonitorConfig`, otherwise `RegimentationSafety` looks up a missing key, but **not** to the coordinator's controller list. After 3 denials the robot requests its current zone's bay and releases the zone only when admitted | `PSrc/Robot.p` (`eAccessDenied`), `FleetSystem` | Variants: one bay per zone; bays only at the ends; ends only plus E4. With no bay at zone 1 and zone 2 blocked (E4), the robot in zone 1 can neither advance nor park, so `AdaptationCompletes` should fail. This replaces the bay assumption of specification section 7.6 with a checked result |
 
@@ -279,7 +279,7 @@ The run-time results are only as good as the log. The monitors assume:
 
 Fill this in as you confirm each step. Until a row has a command, versions and actual output, treat its result as expected, not verified.
 
-**Done so far: Python mirror only** (Python 3.13, 2026-10-20). Run from `MobileRobots/pobserve`:
+**Python mirror on the sample logs** (Python 3.13, 2026-10-20; these verdicts come from the mirror, not from P or PObserve). Run from `MobileRobots/pobserve`:
 
 ```text
 $ python3 ../../tools/simulate_logs.py --scenario fleet --policy twophase --seed 1 --ticks 60 --out src/test/resources/fleet_twophase.log --check
@@ -312,11 +312,16 @@ Across 500 simulated two-phase runs (seeds 0–499, 60 ticks), there were 4,479 
 | Step | Command | Tool versions | Seed / schedules | Actual result |
 |---|---|---|---|---|
 | Compile the model | `p compile` | P 3.1.0.0, .NET SDK 8.0.426 | — | succeeds, no warnings (independent evaluation, 2026-10-21; before L3 and the S1, L2 and R2 corrections were added) |
-| Compile for PObserve | `p compile --mode pobserve` | P 3.1.0.0 | — | Java classes generated (independent evaluation, 2026-10-21) |
+| Compile the model | `p compile` | P 3.1.0.0, .NET SDK 8.0.427 | — | succeeds, no warnings, including L3 and the S1, L2 and R2 corrections (independent evaluation, 2026-11-04) |
+| Compile for PObserve | `p compile --mode pobserve` | P 3.1.0.0 | — | Java classes generated (independent evaluations, 2026-10-21 and 2026-11-04) |
 | Two-phase design (E1) | `p check -tc tcFleetTwoPhase -s 100000` | P 3.1.0.0 | 30-second run, 3,442 schedules | no bug (independent evaluation, 2026-10-21); the 100,000-schedule run is still to do |
+| Two-phase design (E1) | `p check -tc tcFleetTwoPhase -s 10000 --seed 2 --timeout 30` | P 3.1.0.0 | 30-second run, 2,659 schedules | no bug (independent evaluation, 2026-11-04); not the acceptance run |
 | Naive design (E2) | `p check -tc tcFleetNaive -s 10000` | P 3.1.0.0 | schedule 1 | S2 fails: robot 2 admitted under v0 to zone 1, closed by v1 (independent evaluation, 2026-10-21) |
+| Naive design (E2) | `p check -tc tcFleetNaive -s 10000 --seed 2` | P 3.1.0.0 | schedule 1 | S2 fails: robot 1 admitted under v0 to zone 1, closed by v1 (independent evaluation, 2026-11-04) |
 | Fairness (E3) | `p check -tc tcFleetSanctionFairness -s 10000` | P 3.1.0.0 | schedule 1 | F1 fails, as intended (independent evaluation, 2026-10-21) |
-| PObserve package build and JUnit | `./gradlew build` (pinned wrapper) | OpenJDK 17.0.20.8 | — | not run: Gradle and Maven absent, no wrapper committed |
+| Fairness (E3) | `p check -tc tcFleetSanctionFairness -s 10000 --seed 2` | P 3.1.0.0 | schedule 5 | F1 fails, as intended (independent evaluation, 2026-11-04) |
+| Same-direction probe (E6 context) | as E3, on a copy with both robots 0 → 1 → 2 and no picker | P 3.1.0.0 | schedule 17 | F1 fails with no closure and no head-on conflict (independent evaluation, 2026-11-04) |
+| PObserve package build and JUnit | `./gradlew build` (pinned wrapper) | OpenJDK 17.0.20.8 / 17.0.20+8 | — | not run: Gradle and Maven absent, no wrapper committed (2026-10-21); Gradle absent (2026-11-04) |
 | PObserve CLI on both sample logs | `./run_pobserve.sh <log>` | | — | |
 
 For each failing check, keep the trace (`.txt` and `.schedule`) from `PCheckerOutput/BugFinding/` and note the seed that reproduces it.
