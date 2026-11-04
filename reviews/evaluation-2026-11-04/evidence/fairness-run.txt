@@ -1,0 +1,34 @@
+.. Searching for a P project file *.pproj locally in the current folder
+.. Found P project file: C:\Users\Angel\P-Language\reviews\robot-review-2026-11-04\validation\project-copy\MobileRobots\MobileRobots.pproj
+.. Searching for a P compiled file locally in folder ./PGenerated/
+.. Found a P compiled file: ./PGenerated/PChecker\net8.0\MobileRobots.dll
+.. Checking ./PGenerated/PChecker\net8.0\MobileRobots.dll
+.. Running test cases with prefix 'tcFleetSanctionFairness':
+tcFleetSanctionFairness
+.. Test case :: tcFleetSanctionFairness
+... Checker is using 'random' strategy (seed:2).
+..... Schedule #1
+..... Schedule #2
+..... Schedule #3
+..... Schedule #4
+..... Schedule #5
+Checker found a bug.
+... Emitting traces:
+..... Writing ../../fairness-output\BugFinding\MobileRobots_0_0.txt
+..... Writing ../../fairness-output\BugFinding\MobileRobots_0_0.trace.json
+..... Writing ../../fairness-output\BugFinding\MobileRobots_0_0.schedule
+... Elapsed 0.42 sec and used 0.01 GB.
+... Emitting coverage report:
+..... Writing ../../fairness-output\BugFinding\MobileRobots.coverage.txt
+..... Writing ../../fairness-output\BugFinding\MobileRobots.sci
+... Checking statistics:
+..... Found 1 bug.
+... Scheduling statistics:
+..... Explored 5 schedules
+..... Explored 5 timelines
+..... Found 20.00% buggy schedules.
+..... Number of scheduling points in terminating schedules: 112 (min), 156 (avg), 171 (max).
+..... Writing ../../fairness-output\BugFinding\MobileRobots_pchecker_summary.txt
+... Elapsed 0.4915084 sec.
+. Done
+~~ [PTool]: Thanks for using P! ~~
