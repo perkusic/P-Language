@@ -37,10 +37,11 @@ The experiments are numbered as in section 7.3 of the specification. For each on
 | E3 | Sanction fairness (`tcFleetSanctionFairness`) | F1 fails after closures and after head-on conflicts | 10,000 |
 | E4 | Every controller blocks during prepare | L2 holds only with parking | 10,000 |
 | E5 | No parking: robots retry forever | L2 violated by circular wait | 10,000 |
-| E6 | Remedy 1: one travel direction at a time | traffic-caused cases disappear | 10,000 |
+| E6 | Remedy 1: one travel direction at a time | head-on conflicts and head-on-caused cases disappear; same-direction congestion and entrance waits can still cause flagged sanctions with the current retry policy (a waiting or retry policy is an extension with its own prediction) | 10,000 |
 | E7 | Remedy 2: deadlines suspended while blocked, abandoned obligations excused | suspension alone: F1 still fails; with excusal: no regulation-caused case | 10,000 |
 | E8 | Scale: 3–4 robots or 4–5 zones | run time grows rapidly | as feasible |
 | E9 | Prepare timeout and abort after k ticks (log `ADAPT_ABORT`, event `eAdaptationAborted`) | L3 holds; L2 fails by design for an aborted change, which is not installed; S1 and S2 preserved; the picker is refused. Acceptance cases: timeout followed by abort satisfies L3; a prepare neither committed nor aborted violates L3; an aborted prepare never admits the picker and leaves no controller blocked | 10,000 |
+| E10 | Optional. Finite side bays, each a `ResourceGuard` that is never closed: (a) one bay per zone; (b) bays only at the corridor ends; (c) (b) combined with E4 | (a) as E1; (b) L2 still holds; (c) L2 violated: the robot in zone 1 can neither advance nor park | 10,000 |
 
 ## Schedule
 
@@ -59,7 +60,7 @@ The project runs over **45 calendar days** in five phases, as in section 8 of th
 1. **Repository**, kept up to date through D2 and D3 (a branch or fork of this one): your model changes, refined monitor, tests, scripts, generated logs, and the traces you cite. Every `p check` and PObserve command in the article draft must run from it.
 2. **Scientific article draft (D4, day 45)**, prepared by each team: a complete and internally consistent draft, though not yet ready for submission, of 8–12 pages in a workshop-paper format (e.g., EMAS, COINE or WESAAC), with title, authors, abstract (at most 200 words), keywords and references, structured as:
    - the system and its regulation, with the capability and architecture mapping (D1),
-   - design-time results: baseline, experiments E0–E9 that you ran, the fairness analysis and remedy,
+   - design-time results: baseline, experiments E0–E10 that you ran, the fairness analysis and remedy,
    - run-time results: sample logs, your logs, sanction counts by cause, system faults and log defects, clock skew,
    - threats to validity (specification, section 7.6): what the checker did not explore, what the logs cannot show (in particular, causation), where the model differs from a real fleet,
    - the filled validation record as an appendix.

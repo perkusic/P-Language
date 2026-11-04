@@ -4,9 +4,13 @@
 //
 // Robot 1 delivers 0 -> 1 -> 2 and robot 2 delivers 2 -> 1 -> 0 (head-on).
 // A human picker needs zone 1, which must be closed to robots first.
+// Both robots start outside the corridor (pos = -1) and enter at its ends.
 // A robot keeps its current zone until the next one is granted (it cannot
 // vanish). After 3 denials it parks in a side bay, releasing its zone, and
 // abandons the task. The organization then sanctions it.
+// Not modeled: stations, loads, batteries, return trips, and the bay itself.
+// Parking is modeled only as releasing the zone, which ASSUMES a free bay
+// reachable from every zone (SPECIFICATION.md, Section 7.6).
 fun Z0(): int { return 0; }
 fun Z1(): int { return 1; }
 fun Z2(): int { return 2; }
@@ -55,7 +59,10 @@ machine Robot {
       }
     }
     on eAccessGranted do (g: tGrant) {
-      ReleaseCurrent();        // physically moves into the next zone
+      // Abstracts the traversal: P is untimed. A realization must release the
+      // previous zone only after the robot has completely left it
+      // (SPECIFICATION.md, Section 6, contract between model and physical events).
+      ReleaseCurrent();
       pos = pos + 1;
       attempts = 0;
       goto Moving;
@@ -70,7 +77,7 @@ machine Robot {
         } else {
           announce eTaskAbandoned, (id = job.id, agent = id, where = -1);
         }
-        ReleaseCurrent();      // park in a side bay, abandon the task
+        ReleaseCurrent();      // park in a side bay (not modeled: assumed free and reachable), abandon the task
         goto Idle;
       }
     }
@@ -88,8 +95,9 @@ machine Robot {
 // Architecture: admission (regimentation) is distributed, with one
 // controller per zone deciding locally. Adaptation (one AdaptationCoordinator)
 // and obligations/sanctions (one ObligationManager) are centralized.
-// Grid cell: hybrid (environment + organization + agent), with distributed
-// regimentation and centralized adaptation and sanctioning.
+// Grid cell: hybrid (environment + organization), with distributed
+// regimentation and centralized adaptation and sanctioning. The robots are
+// regulated agents; they do not manage the norms.
 machine FleetSystem {
   start state Init {
     entry (twoPhase: bool) {

@@ -7,11 +7,11 @@ Two robots deliver through a narrow corridor in opposite directions:
    robot 1:  0 → 1 → 2                    robot 2:  2 → 1 → 0
 ```
 
-A human picker needs zone 1, which must first be **closed to robots** (adaptation). A robot keeps its zone until the next one is granted. After 3 denials it parks in a side bay and abandons the delivery, and the organization then sanctions it.
+A human picker needs zone 1, which must first be **closed to robots** (adaptation). Both robots start outside the corridor and enter at its ends. A robot keeps its zone until the next one is granted. After 3 denials it parks in a side bay and abandons the delivery, and the organization then sanctions it. The bay is not modeled: parking only releases the zone, which assumes a free bay reachable from every zone (`SPECIFICATION.md`, Section 7.6).
 
 > **Verification status.** The independent evaluation of 21 October 2026 (`reviews/evaluation-2026-10-21`) compiled the P files and ran the first schedules of the three test cases (section 5). The Java parser has not been built and PObserve has not been run. Every other "expected" result below is a hypothesis. The only results actually produced so far come from the Python mirror of the monitors (`tools/simulate_logs.py --check`), recorded in section 5. Fill in the validation record there as you confirm each step.
 
-Grid cell (Yan et al., COINE 2025): **hybrid (environment + organization + agent)**, with responsibilities split as follows:
+Grid cell (Yan et al., COINE 2025): **hybrid (environment + organization)**, with responsibilities split as follows. The robots are regulated agents; they do not manage the norms.
 
 | Responsibility | Machine | Where it runs |
 |---|---|---|
@@ -130,8 +130,9 @@ The experiment ids match section 7.3 of the specification, which also defines E0
 |---|---|---|---|
 | E4 | Block **all** zone controllers during prepare (drop the "unaffected guard acks at once" branch) | `Common/ResourceGuard.p`, `Open.eNormPrepare` | Drain now depends on parking. A robot in zone 1 cannot advance to a blocked zone 2. Remove parking as well and `AdaptationCompletes` should fail |
 | E5 | Remove parking (retry forever) | `PSrc/Robot.p`, `eAccessDenied` | Head-on hold-and-wait: robots in zones 1 and 2 wait for each other forever. Expect `AdaptationCompletes` to fail when zone 1 must drain |
-| E6 | Add a traffic norm: one direction per corridor (e.g. a `DirectionGuard` granting the corridor to one direction at a time) | new machine | If head-on denials disappear, any remaining `SanctionsReflectMisconduct` failure must follow a closure. Check this in the trace; the monitor itself still does not record the cause |
+| E6 | Add a traffic norm: one direction per corridor (e.g. a `DirectionGuard` granting the corridor to one direction at a time) | new machine | Head-on conflicts should disappear. `SanctionsReflectMisconduct` can still fail after same-direction congestion or a wait at the entrance, because a robot retries three times without waiting (a two-robot same-direction probe of the review of 4 November 2026 shows this). Classify each remaining failure in the trace; the monitor itself does not record the cause. Changing the retry policy (waiting k ticks, or waiting for a release) is an extension with its own prediction |
 | E7 | Suspend deadlines while the regulation blocks an agent | `ObligationManager` | Expected: `SanctionsReflectMisconduct` still fails, because an abandoned obligation is still sanctioned when it falls due; it holds for regulation-caused cases only if abandoned obligations are also excused. To be confirmed with `p check` |
+| E10 (optional) | Model the side bays: one `ResourceGuard` per bay (ids 3–5), never closed. Add the bays to the capacity map announced with `eMonitorConfig`, otherwise `RegimentationSafety` looks up a missing key, but **not** to the coordinator's controller list. After 3 denials the robot requests its current zone's bay and releases the zone only when admitted | `PSrc/Robot.p` (`eAccessDenied`), `FleetSystem` | Variants: one bay per zone; bays only at the ends; ends only plus E4. With no bay at zone 1 and zone 2 blocked (E4), the robot in zone 1 can neither advance nor park, so `AdaptationCompletes` should fail. This replaces the bay assumption of specification section 7.6 with a checked result |
 
 ---
 
@@ -163,6 +164,8 @@ plus one fleet-specific event:
 | Event | Fields | Emitted by | P event |
 |---|---|---|---|
 | `ABANDON` | `Id, Agent, Where` (`Id` = the abandoned obligation; `Where=-1` = still at the entrance) | robot node, when it gives up | `eTaskAbandoned` |
+
+**Admission and clearance contract.** `ENTER` records the zone controller's exclusive reservation before the grant, not a sensor-confirmed crossing. While a robot crosses a boundary it holds both reservations. Emit `LEAVE` only after confirming that the robot has completely left the zone, whether into the next zone, a side bay or out of the corridor; a robot stopped inside the zone has not left it. The preparation acknowledgement inherits this assumption. Log `HUMAN_ENTER`/`HUMAN_LEAVE` on confirmed crossings of zone 1. `COMMIT` records the coordinator's decision, not completed installation at every controller. The P model abstracts the traversal (`Robot.p` sends the release on receipt of the next grant), so this contract is a premise, not something the model checks.
 
 Fleet-specific details:
 - `CONFIG` lists every zone: `Capacity=0:1;1:1;2:1`.
