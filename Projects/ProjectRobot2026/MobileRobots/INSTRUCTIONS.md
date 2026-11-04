@@ -7,7 +7,7 @@ Two robots deliver through a narrow corridor in opposite directions:
    robot 1:  0 → 1 → 2                    robot 2:  2 → 1 → 0
 ```
 
-A human picker needs zone 1, which must first be **closed to robots** (adaptation). A robot keeps its zone until the next one is granted. After 3 denials it parks in a side bay and abandons the delivery, and the organization then sanctions it.
+A human picker needs zone 1, which must first be **closed to robots** (adaptation). Both robots start outside the corridor and enter at its ends. A robot keeps its zone until the next one is granted. After 3 denials it parks in a side bay and abandons the delivery, and the organization then sanctions it. The bay is not modeled: parking only releases the zone, which assumes a free bay reachable from every zone (`SPECIFICATION.md`, Section 7.6).
 
 > **Verification status.** The independent evaluation of 21 October 2026 (`reviews/evaluation-2026-10-21`) compiled the P files and ran the first schedules of the three test cases (section 5). The Java parser has not been built and PObserve has not been run. Every other "expected" result below is a hypothesis. The only results actually produced so far come from the Python mirror of the monitors (`tools/simulate_logs.py --check`), recorded in section 5. Fill in the validation record there as you confirm each step.
 
