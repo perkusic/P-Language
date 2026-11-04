@@ -59,7 +59,10 @@ machine Robot {
       }
     }
     on eAccessGranted do (g: tGrant) {
-      ReleaseCurrent();        // physically moves into the next zone
+      // Abstracts the traversal: P is untimed. A realization must release the
+      // previous zone only after the robot has completely left it
+      // (SPECIFICATION.md, Section 6, contract between model and physical events).
+      ReleaseCurrent();
       pos = pos + 1;
       attempts = 0;
       goto Moving;
@@ -92,8 +95,9 @@ machine Robot {
 // Architecture: admission (regimentation) is distributed, with one
 // controller per zone deciding locally. Adaptation (one AdaptationCoordinator)
 // and obligations/sanctions (one ObligationManager) are centralized.
-// Grid cell: hybrid (environment + organization + agent), with distributed
-// regimentation and centralized adaptation and sanctioning.
+// Grid cell: hybrid (environment + organization), with distributed
+// regimentation and centralized adaptation and sanctioning. The robots are
+// regulated agents; they do not manage the norms.
 machine FleetSystem {
   start state Init {
     entry (twoPhase: bool) {

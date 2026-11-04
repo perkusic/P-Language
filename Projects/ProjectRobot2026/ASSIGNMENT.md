@@ -37,7 +37,7 @@ The experiments are numbered as in section 7.3 of the specification. For each on
 | E3 | Sanction fairness (`tcFleetSanctionFairness`) | F1 fails after closures and after head-on conflicts | 10,000 |
 | E4 | Every controller blocks during prepare | L2 holds only with parking | 10,000 |
 | E5 | No parking: robots retry forever | L2 violated by circular wait | 10,000 |
-| E6 | Remedy 1: one travel direction at a time | traffic-caused cases disappear | 10,000 |
+| E6 | Remedy 1: one travel direction at a time | head-on conflicts and head-on-caused cases disappear; same-direction congestion and entrance waits can still cause flagged sanctions with the current retry policy (a waiting or retry policy is an extension with its own prediction) | 10,000 |
 | E7 | Remedy 2: deadlines suspended while blocked, abandoned obligations excused | suspension alone: F1 still fails; with excusal: no regulation-caused case | 10,000 |
 | E8 | Scale: 3–4 robots or 4–5 zones | run time grows rapidly | as feasible |
 | E9 | Prepare timeout and abort after k ticks (log `ADAPT_ABORT`, event `eAdaptationAborted`) | L3 holds; L2 fails by design for an aborted change, which is not installed; S1 and S2 preserved; the picker is refused. Acceptance cases: timeout followed by abort satisfies L3; a prepare neither committed nor aborted violates L3; an aborted prepare never admits the picker and leaves no controller blocked | 10,000 |

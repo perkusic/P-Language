@@ -118,9 +118,9 @@ The following must be done with respect to Figure 4:
 
 - run `p check -tc tcFleetNaive` (experiment E2) until the first violation, identify the failing monitor (S1 or S2), and explain the counterexample with the template of [Section 7.8](#78-reporting-a-counterexample), naming the step at which the coordinator and the controller of zone 1 hold different norm sets;
 - compare the counterexample with the result of E1 and state which step of the right column excludes the violating interleaving;
-- run `p check -tc tcFleetSanctionFairness` (experiment E3) and attribute each flagged sanction to its cause, a closure or a head-on conflict.
+- run `p check -tc tcFleetSanctionFairness` (experiment E3) and attribute each flagged sanction to its cause: a closure, a head-on conflict, or another robot occupying the requested zone (for example at the corridor entrance).
 
-The project instantiates one cell of the conceptual grid proposed by [Yan, Nardin, Boissier & Sichman](https://hal-emse.ccsd.cnrs.fr/emse-05162306v1) (*A Unified View on Regulation Management in Multi-Agent Systems*, COINE 2025) as a system whose properties can be verified. The grid combines three perspectives: regulation capabilities, programming dimensions and architectural style. The cell considered here is **hybrid (environment + organization + agent), with distributed regimentation and centralized adaptation and sanctioning**: each corridor zone has its own controller, which admits or denies robots on the basis of local information only, whereas a single coordinator changes the norm set and a single fleet manager tracks obligations and applies sanctions ([Section 4.3](#43-architectural-styles)).
+The project instantiates one cell of the conceptual grid proposed by [Yan, Nardin, Boissier & Sichman](https://hal-emse.ccsd.cnrs.fr/emse-05162306v1) (*A Unified View on Regulation Management in Multi-Agent Systems*, COINE 2025) as a system whose properties can be verified. The grid combines three perspectives: regulation capabilities, programming dimensions and architectural style. The cell considered here is **hybrid (environment + organization), with distributed regimentation and centralized adaptation and sanctioning**; the robots are regulated agents and take no part in managing the norms: each corridor zone has its own controller, which admits or denies robots on the basis of local information only, whereas a single coordinator changes the norm set and a single fleet manager tracks obligations and applies sanctions ([Section 4.3](#43-architectural-styles)).
 
 **Research questions:**
 
@@ -150,7 +150,7 @@ The project instantiates one cell of the conceptual grid proposed by [Yan, Nardi
 | Id | Property (informal) | Class |
 | --- | --- | --- |
 | S1 | never two robots in a zone; never a robot and a person in the same zone | safety |
-| S2 | no admission to a zone that the committed norm set closes; norm sets installed in version order | safety |
+| S2 | no admission to a zone that the last committed norm set closes; norm sets committed in version order | safety |
 | S3 | no delivery both fulfilled and sanctioned | safety (organizational integrity) |
 | L1 | every obligation is eventually fulfilled or sanctioned | liveness |
 | L2 | every adaptation eventually commits | liveness |
@@ -655,10 +655,10 @@ The COINE 2025 paper is openly available from the [workshop website](https://coi
 
 Constitutive and regulative norms determine who may perform each step and under which conditions. The authors implement the model by extending the SAI and NPL(s) normative engines within JaCaMo.
 
-**Challenges of the distributed style.** With a single regulator, executing an adaptation amounts to one local update. With one regulator per zone, the update must reach every controller. Messages arrive in an arbitrary order, and agents continue to act while messages are in transit. During this interval, controllers may disagree, and a robot may be admitted under the superseded rules. A protocol modeled on two-phase commit from distributed databases removes this interval:
+**Challenges of the distributed style.** With a single regulator, executing an adaptation amounts to one local update. With one regulator per zone, the update must reach every controller. Messages arrive in an arbitrary order, and agents continue to act while messages are in transit. During this interval, controllers may disagree, and a robot may be admitted under the superseded rules. A protocol modeled on two-phase commit from distributed databases does not remove this interval, but makes it harmless for the closed zone:
 
 - **Prepare.** The affected controllers stop admitting robots and drain the zone.
-- **Commit.** The new norm set takes effect only after every controller has acknowledged.
+- **Commit.** The new norm set is committed only after every controller has acknowledged. The controllers still install it at different times, but the affected zone stays closed to new robots throughout ([Section 4.6](#46-the-inconsistency-window)).
 
 The protocol, however, introduces a new risk: draining presupposes that robots are *able* to leave, and in a one-lane corridor they may obstruct one another.
 
@@ -730,7 +730,7 @@ The two models differ in one significant respect: in a normative MAS, the adapta
 The **transition window** is the interval between the decision to change the norms and the moment at which every regulator applies the change. Three hazards arise within it:
 
 1. **Stale admission.** A controller still operating under the previous norm set admits a robot into a zone that the new set closes (property S2). S2 is a closure property: it requires only that an admitted zone is not closed by the last committed norm set, and it does not require that the admission carry the committed version, because a controller that the change does not affect legitimately admits robots under the previous version while the change propagates (probe tcStaleOpenZone of the independent evaluation, reviews/evaluation-2026-10-21/probe-stale.txt).
-2. **Premature entry.** The person enters before the zone has been drained (properties S1 and R3).
+2. **Premature entry.** Entry without a committed closure violates R3. Entry while a robot still holds a reservation of the zone violates S1, even if the closure is already committed. R3 alone does not establish that the zone is empty, and neither property establishes physical isolation.
 3. **Lost or reordered updates.** Two adaptations overlap, and controllers apply them in different orders. Version numbers and the serialization of adaptations in the coordinator prevent this hazard.
 
 The remedy is a protocol modeled on **two-phase commit** from distributed databases, reduced to three steps: *prepare* (the affected controller stops admitting robots), *drain* (it waits until its zone is empty) and *commit* (the new norm set takes effect everywhere). It is therefore more precisely a **prepare–drain–commit barrier**: unlike classical two-phase commit, the participants do not vote, and there is no abort path. Two kinds of blocking must be distinguished. In classical two-phase commit, blocking arises when the coordinator fails after the participants have prepared, leaving them uncertain about the outcome; the starter kit does not model coordinator failure. In the fleet, blocking arises instead when a participant cannot complete its prepare phase: the controller of zone 1 waits for a robot that cannot leave because the next zone is held by another robot. Whether this can occur is the subject of liveness property L2. The protocol is also an instance of the quiescence-based approach to dynamic reconfiguration of [Kramer and Magee](https://doi.org/10.1109/32.60317), in which a component is changed only after it has been brought to a quiescent state, here an empty zone. A variant with a timeout and an abort path, in which the coordinator cancels the adaptation if the zone does not drain in time, is evaluated in experiment E9. For this variant, property L3 (AdaptationTerminates) requires that every started adaptation be committed or explicitly aborted (log event ADAPT\_ABORT); L2 remains the stronger requirement that the change be installed, and it fails by design for an aborted change.
@@ -1011,22 +1011,34 @@ Two mobile robots deliver goods through a one-lane corridor consisting of three 
 
 *Figure 20 · fleet architecture, components by MAOP dimension*
 
-Because each zone controller decides independently ([Figure 20](#figure-20)), a closure is safe only if all three controllers switch norm sets before the picker enters. The project verifies the coordinator's protocol and the ability of the robots to drain zone 1.
+Because each zone controller decides independently ([Figure 20](#figure-20)), a closure is safe only if the controller of zone 1 has stopped admitting robots and zone 1 is empty before the picker enters. The other controllers may install the new norm set later, because the change does not affect their zones. The project verifies the coordinator's protocol and the ability of the robots to drain zone 1.
 
 **Normal operation:**
 
 1. The fleet manager assigns a delivery, which creates an obligation with a deadline.
-2. The robot requests entry from the controller of its next zone. It continues to occupy its current zone until entry is granted, because a robot cannot leave a zone instantaneously.
-3. If the next zone is open and free, its controller admits the robot, which then releases the zone behind it.
+2. The robot requests entry from the controller of its next zone. It keeps the reservation of its current zone until entry is granted.
+3. If the next zone is open and free, its controller admits the robot, which then releases the zone behind it. In the model, the robot sends that release as soon as it receives the grant; the traversal itself is not modeled (see the contract below).
 4. After three denials, the robot parks in a side bay, releases its zone and abandons the delivery. The bay is not modeled: the model only releases the zone and assumes that a free bay is reachable from the robot's current zone ([Section 7.6](#76-modeling-assumptions-and-threats-to-validity)). In the baseline configuration each robot receives a single delivery, so a parked robot's return to the corridor is not modeled either.
 5. At the last zone, the robot leaves the corridor and reports completion. As an open-system agent, a robot may fail to report.
 6. If the deadline passes without a report, the fleet manager sanctions the robot.
+
+**Contract between the model and physical events.** P is untimed: the model does not represent the traversal of a zone boundary, which does not mean that the traversal takes no time. Every physical realization, and every log checked with PObserve, must satisfy the following contract.
+
+| Event or state | Meaning and required assumption |
+| --- | --- |
+| Grant / `eResourceEntered` (`ENTER`) | The zone controller records an exclusive reservation before sending `eAccessGranted`. This is a conservative admission event, not a sensor-confirmed crossing. No robot crosses into a zone before its grant. |
+| Traversal | While a robot crosses from one zone to the next, it holds both reservations. The reservation of the next zone covers the whole approach. |
+| `eRelease` / `eResourceLeft` (`LEAVE`) | A realization emits the release of a zone only after confirming that the robot has completely left it, whether it moved to the next zone, into a side bay or out of the corridor. A robot stopped inside a zone has not released it. In `Robot.p`, the release is sent on receipt of the grant; this abstracts the traversal. |
+| `eNormPrepareAck` | The affected controller acknowledges only after its set of reservations is empty. Its physical meaning inherits the release assumption; the acknowledgement is not an independent measurement of emptiness. |
+| `eHumanEntered(1)` / `eHumanLeft(1)` | Confirmed crossing into or out of zone 1. |
+
+PObserve checks the recorded events. A log that releases a reservation before the robot has left the zone can present a dangerous execution as safe. Teams declare this contract as a premise; separating grant, crossing confirmation and exit confirmation in the model is an optional refinement.
 
 **Zone closure (regulation adaptation):**
 
 1. **Detect.** The picker requests the closure.
 2. **Design.** The regulation coordinator computes the next norm set: version + 1, with zone 1 closed.
-3. **Execute.** The new norm set is installed in every zone controller, after which the picker is notified that entry is permitted.
+3. **Execute.** After every controller has acknowledged, the coordinator announces the commit, sends the new norm set to every zone controller and then notifies the picker. The picker enters on that notification. The controllers process the new norm set asynchronously, so the notification may be processed before a controller installs it; the controller of zone 1 still denies robots meanwhile, because it waits in `AwaitCommit`.
 4. Upon leaving, the picker requests the reverse adaptation, which reopens zone 1.
 
 **Norms of the fleet:**
@@ -1035,8 +1047,8 @@ Because each zone controller decides independently ([Figure 20](#figure-20)), a 
 | --- | --- | --- | --- | --- |
 | At most one robot per zone | prohibition | regimented by each zone controller | physical safety | S1 |
 | No robot in a zone while a person is inside | prohibition | regimented by the zone controllers | physical safety | S1 |
-| No admission under a norm set that has been superseded | prohibition on the regulator | regimented by the adaptation protocol | consistency of regulation | S2 |
-| Norm sets are installed in version order | obligation on the regulator | by construction of the coordinator, monitored | consistency of regulation | S2 |
+| No admission to a zone that the last committed norm set closes | prohibition on the regulator | regimented by the adaptation protocol | consistency of regulation | S2 |
+| Norm sets are committed in version order | obligation on the regulator | by construction of the coordinator, monitored | consistency of regulation | S2 (commit order only; no installation event is observed, and an unaffected controller may legitimately admit under the previous version) |
 | A requested closure is eventually installed | obligation on the regulator | by the protocol, monitored | liveness of regulation | L2; R2 at run time |
 | A person enters only after the closure is committed | obligation on the procedure | monitored | safety procedure | R3 |
 | Report a delivery before its deadline | obligation with deadline | sanctioned by the fleet manager | performance | L1; R1 at run time |
@@ -1058,7 +1070,7 @@ In the naive sequence, the zone 1 controller still holds norm set v0 when the ro
 
 The two central results expected from the project are a demonstration that the naive policy is unsafe and an analysis of the sanctions that even the safe policy applies to robots blocked by regulation or traffic.
 
-**The two-phase protocol as state machines.** In the starter kit, the protocol is distributed over two P machines ([Figure 22](#figure-22)): the `AdaptationCoordinator` and one `ResourceGuard` per zone.
+**The two-phase protocol as state machines.** In the starter kit, the protocol is distributed over two P machines ([Figure 22](#figure-22)): the `AdaptationCoordinator` and one `ResourceGuard` per zone. Figure 22 shows the path of the affected controller while its zone is still occupied; the affected-but-empty case and the unaffected controllers are described below it.
 
 <a id="figure-22"></a>
 
@@ -1068,7 +1080,7 @@ The two central results expected from the project are a demonstration that the n
 
 - **Prepare.** The coordinator sends `eNormPrepare` to every zone controller. The controller of zone 1, which the new norm set closes, enters `Draining`: it denies new robots but permits the current occupant to leave. Zones 0 and 2 are unaffected and acknowledge immediately, so they continue to serve robots throughout.
 - **Acknowledge.** When zone 1 is empty, its controller sends `eNormPrepareAck` and continues to deny requests, because it cannot yet determine whether the commit has occurred.
-- **Commit.** Once all acknowledgements have been received, the coordinator announces `eNormCommitted`, which the monitors observe and which permits the picker to enter. It then sends `eNormCommit`, upon which each controller installs the new version.
+- **Commit.** Once all acknowledgements have been received, the coordinator announces `eNormCommitted`, which the monitors observe, sends `eNormCommit` to every controller and then sends `eAdaptationDone` to the picker. The picker enters on that notification, not on the announcement. Installation and notification have different recipients and may be processed in either order; the controller of zone 1 stays in `AwaitCommit`, denying robots, until it installs the new version, and the unaffected controllers remain in `Open`.
 
 The safety argument rests on the highlighted states. The figure also reveals the cost of the protocol: the coordinator remains in `Preparing` until zone 1 is empty, and in the corridor, emptying a zone is not always possible.
 
@@ -1076,26 +1088,26 @@ The safety argument rests on the highlighted states. The figure also reveals the
 
 <a id="figure-23"></a>
 
-![Figure 23 · head-on robots form a wait-for cycle, and the Coffman condition each remedy removes](figures/figure23.svg)
+![Figure 23 · head-on robots form a wait-for cycle, and three ways to resolve it](figures/figure23.svg)
 
-*Figure 23 · head-on robots form a wait-for cycle, and the Coffman condition each remedy removes*
+*Figure 23 · head-on robots form a wait-for cycle, and three ways to resolve it*
 
 The cycle is relevant to regulation in two respects. First, it can block the closure: if robot 1 occupies zone 1 while waiting for zone 2, zone 1 is never drained and the adaptation never commits. Property L2 (`AdaptationCompletes`) detects this situation when parking is removed. Second, every resolution of the cycle has a normative cost:
 
-- **Voluntary release (parking).** The robots of the starter kit abandon the task after three denials and park. This resolves the deadlock but leaves the task incomplete, and the robot is subsequently sanctioned for that obligation, which F1 flags as a potentially unfair sanction.
+- **Abandon and release (parking).** After three denials, a robot of the starter kit abandons its task and releases its zone, under the assumption that it can leave into a side bay ([Section 7.6](#76-modeling-assumptions-and-threats-to-validity)). This exit prevents the wait-for cycle from remaining blocked indefinitely, but leaves the task incomplete, and the robot is subsequently sanctioned for that obligation, which F1 flags as a potentially unfair sanction.
 - **Preventing the cycle.** A traffic norm that admits only one direction of travel at a time renders the cycle impossible. It constitutes an additional regimented norm and reduces throughput.
-- **Detection and recovery.** A supervisor detects the cycle and backs one robot out. This approach requires a free bay and introduces an additional component that must itself be verified.
+- **Detection and recovery.** A supervisor detects the cycle and compulsorily withdraws one robot's reservation, backing it out. The baseline contains no such supervisor. This approach requires a free bay and introduces an additional component that must itself be verified.
 
-**Coffman conditions.** A deadlock requires four conditions to hold simultaneously ([Coffman, Elphick and Shoshani](https://doi.org/10.1145/356586.356588)). Each remedy removes one of them:
+**Coffman conditions.** A deadlock requires four conditions to hold simultaneously ([Coffman, Elphick and Shoshani](https://doi.org/10.1145/356586.356588)). The table relates each condition to the corridor and to a strategy that addresses it:
 
-| Condition | In the corridor | Remedy that removes it |
+| Condition | In the corridor | Strategy that addresses it |
 | --- | --- | --- |
 | Mutual exclusion | a zone admits one robot (capacity 1) | none: it is the safety norm S1 |
 | Hold and wait | a robot keeps its zone while it requests the next one | reservation of the whole route before departure |
-| No preemption | a robot cannot be forced out of its zone | voluntary release after three denials (parking), or a supervisor that backs a robot out |
+| No preemption | a robot cannot be forced out of its zone | a supervisor that compulsorily withdraws a reservation (not in the baseline; requires a free bay) |
 | Circular wait | head-on robots wait for each other's zone | a traffic norm that admits one direction at a time |
 
-Parking thus removes the *no-preemption* condition through voluntary release; it does not remove hold-and-wait, because a robot holds its zone while it retries. Two risks remain even without deadlock. **Livelock** occurs if robots repeatedly park and re-enter in the same pattern without progress, and **starvation** occurs if one robot is always overtaken by another ([Section 5.10](#510-what-a-hot-state-violation-means)). Both affect L1 and the sanction counts rather than safety.
+The starter kit's parking is not listed against a single condition. After three denials the robot abandons its task and releases its reservation, under the bay assumption of [Section 7.6](#76-modeling-assumptions-and-threats-to-validity); this exit prevents the wait-for cycle from remaining blocked indefinitely, so with parking the cycle is not a terminal deadlock in the baseline, and indefinite waiting arises only in the variant without parking (E5). Textbooks classify such a release after a failed request differently, under hold-and-wait or under no preemption depending on whether the release is voluntary or imposed; the project's results do not depend on that classification. Two risks remain even without deadlock. **Livelock** occurs if robots repeatedly park and re-enter in the same pattern without progress, and **starvation** occurs if one robot is always overtaken by another ([Section 5.10](#510-what-a-hot-state-violation-means)). Both prevent deliveries from being completed and increase the number of sanctions, but neither threatens safety, and both can leave L1 satisfied: L1 accepts a sanction as the resolution of an obligation, and the final far-future tick of the clock passes every deadline. Assessing delivery completion requires a separate measure, such as the number of fulfilled obligations.
 
 A comparison of these remedies with the checker, with respect to both the closure properties and the fairness property, is one of the experiments of the project ([Section 7.3](#73-experiments-priorities-in-75)).
 
@@ -1144,16 +1156,18 @@ The expected outcomes are **hypotheses** derived from the design. They are consi
 | E0 | Monitor sanity: one mutant per monitor ([Section 5.11](#511-vacuity-and-sanity-checks)) | Can each monitor fail? | each mutant violates its monitor | every monitor fails on its mutant; event coverage reported | 10,000 | mutants, traces, coverage table |
 | E1 | Baseline, prepare–drain–commit: no change | Do S1–S3, L1–L3 and R3 hold? | no violation | no violation; N justified by calibration ([Section 5.9](#59-what-n-schedules-guarantee)) | 100,000 | command, seeds, versions, output |
 | E2 | Baseline, naive: `twoPhase = false` | Which monitor fails first, and in which zone? | S1 or S2 in zone 1 | violation found and explained with the template of [Section 7.8](#78-reporting-a-counterexample) | 10,000 | trace and explanation |
-| E3 | Sanction fairness: test `tcFleetSanctionFairness` | Which situations produce flagged sanctions? | F1 violated after closures and after head-on conflicts | each flagged trace attributed to a cause | 10,000 | traces for both causes, or an argument that one cannot occur |
+| E3 | Sanction fairness: test `tcFleetSanctionFairness` | Which situations produce flagged sanctions? | F1 violated after closures and after traffic denials (head-on conflicts, or a requested zone held by the other robot) | each flagged trace attributed to a cause | 10,000 | traces for both causes, or an argument that one cannot occur |
 | E4 | Block every controller during prepare: remove the "unaffected controller acks at once" branch | Does draining depend on parking? Does anything deadlock? | L2 holds only with parking | prediction confirmed or refuted with a trace | 10,000 | trace or run summary |
 | E5 | No parking: robots retry forever | Does the corridor deadlock occur, and does L2 fail when zone 1 must drain? | L2 violated by circular wait | violation found and classified as genuine ([Section 5.10](#510-what-a-hot-state-violation-means)) | 10,000 | trace and classification |
-| E6 | Traffic norm (remedy 1): one travel direction at a time | Do flagged sanctions then follow only closures? | traffic-caused cases disappear | refined monitor reports no traffic-caused case; all safety monitors hold | 10,000 | refined-monitor output; safety results |
+| E6 | Traffic norm (remedy 1): one travel direction at a time | Does the norm eliminate head-on conflicts, and which flagged sanctions remain? | no head-on wait-for cycle and no head-on-caused case; flagged sanctions caused by same-direction congestion or by waiting at the entrance remain possible with the three-immediate-retries policy (a two-robot same-direction probe of the review of 4 November 2026 produced one) | refined monitor reports no head-on-caused case and classifies the remaining traffic cases; all safety monitors hold | 10,000 | refined-monitor output; safety results |
 | E7 | Excusing obligations (remedy 2): deadlines suspended while the regulation blocks a robot, and obligations abandoned because of a closure excused | Does F1 hold for regulation-caused cases, and at what cost? | suspension alone: F1 still fails; with excusal: no regulation-caused case | refined monitor reports no regulation-caused case; safety monitors and L1 hold | 10,000 | outputs before and after; cost in L1 (checker) and in sanction counts (PObserve) |
 | E8 | Scale: 3–4 robots or 4–5 zones | Where does exploration stop scaling? | run time grows rapidly | run times reported per size | as feasible | table of sizes and times |
 | E9 | Prepare timeout and abort: the coordinator aborts if the zone does not drain within k ticks | Does every adaptation terminate without parking (L3), and are S1 and S2 preserved? | L3 holds; L2 fails by design for an aborted change, which is not installed (it remains in its hot state or, if the change is retried, reports a new start before the previous commit); S1 and S2 preserved; the picker is refused | prediction confirmed or refuted; acceptance cases: a timeout followed by `ADAPT_ABORT` satisfies L3; a prepare that is neither committed nor aborted violates L3; an aborted prepare never admits the picker and leaves no controller blocked | 10,000 | traces and discussion |
 | E10 | Finite side bays: model each bay as a `ResourceGuard` that is never closed (resource ids 3–5, added to the `eMonitorConfig` capacity map but not to the coordinator's controller list); after three denials the robot requests the bay of its current zone and releases the zone only when the bay admits it, and otherwise keeps its zone and retries. Variants: (a) one bay of capacity 1 per zone; (b) bays only at the corridor ends, none at zone 1; (c) variant (b) combined with E4 | Do the results that assumed parking ([Section 7.6](#76-modeling-assumptions-and-threats-to-validity)) still hold when bays are finite and placed? | (a) as E1; (b) L2 still holds, because the robot in zone 2 can park and clear the way; (c) L2 violated: the robot in zone 1 can neither advance nor park | each variant's prediction confirmed or refuted with a trace or run summary; the bay row of [Section 7.6](#76-modeling-assumptions-and-threats-to-validity) revised with the result | 10,000 | modified model, traces or run summaries, revised assumption row |
 
 Predictions are recorded before each run. The identifiers E0–E10 are also used in the assignment and in the instructions.
+
+**Extension of E6: waiting and retry policy.** Removing all traffic-caused flagged sanctions requires more than a direction norm: the robot's retry policy must change as well, for instance retrying after k ticks or waiting for a release notification instead of retrying immediately. Such a policy is an extension with its own prediction and tests; it is required only if a team sets itself the goal of eliminating all traffic-caused cases.
 
 **Stretch goal: refinement (research question 3).** An abstract centralized regulator is specified as a single machine holding the state of the entire corridor. It is then shown, either by refinement testing or by means of P's module system, that the three distributed controllers together with the coordinator behave as this regulator. Such a result would turn the architectural-style axis of the unified view into a verified claim.
 
@@ -1202,7 +1216,7 @@ Every result of the project holds relative to the model and to the logs. The fol
 | Robots may fail to report (`$`) | robots may crash or lose connectivity | over-approximation of reporting failures | L1, R1, S3 |
 | Messages are neither lost nor duplicated | networks lose and duplicate messages | under-approximation | S2, L2 |
 | Messages between two machines arrive in order; different senders interleave arbitrarily | ROS 2 topics with suitable QoS; arbitrary delays | over-approximation of delays | S1, S2 |
-| Zone moves are discrete; a robot holds its zone until the next is granted | continuous motion; a robot occupies two zones while crossing a boundary | abstraction | S1, deadlock |
+| Zone moves are discrete; a robot holds its zone until the next is granted, and the release of a zone is emitted only after the robot has completely left it (contract in [Section 6](#6-the-system-robots-in-a-shared-corridor)) | continuous motion; a robot occupies two zones while crossing a boundary; a release sent before the robot has left would make a log of a dangerous execution look safe | abstraction and explicit refinement premise; not checked by the baseline | S1, S2, deadlock, the physical meaning of the prepare acknowledgement |
 | Robots start outside the corridor and enter only at its ends; stations, loads, batteries and return trips are not modeled | robots come from charging and loading areas, may run low on battery and re-enter after a delivery | abstraction | L1, F1 counts |
 | A robot that gives up leaves its zone at once into a side bay that is reachable from that zone without entering another zone and is always free; a parked robot never returns | bays have finite capacity, may be occupied or exist only at the corridor ends; leaving a zone takes time; parked robots re-enter | under-approximation | L2 with parking, E4, E5, F1 counts; examined in E10 |
 | The picker waits for the commit before entering | people may enter without permission | under-approximation | R3, S1 |
@@ -1405,7 +1419,7 @@ cd pobserve && gradle wrapper && ./gradlew build uberjar && ./run_pobserve.sh
 | Partition key | the log field by which PObserve groups events into independent monitor instances (here, `Site`) |
 | Regimentation | enforcement that makes a violation impossible |
 | Safety property | a property stating that nothing bad happens; every violation has a finite bad prefix |
-| Sanction fairness | the requirement that a robot is sanctioned only for non-compliance it could have avoided |
+| Sanction fairness | the requirement that a robot is sanctioned only for non-compliance it could have avoided. Project convention: *sanction fairness*, in Portuguese *equidade das sanções*; the literature also uses *justice* for broader normative principles |
 | Sanctioning | enforcement that detects a violation and responds with a sanction |
 | Schedule | one execution explored by the checker, with all scheduling and `$` choices resolved |
 | Tick | one step of the organization's logical clock |
