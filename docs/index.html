@@ -41,6 +41,11 @@
   nav.toc li { margin: 5px 0; }
   nav.toc a { color: var(--fg); text-decoration: none; border-bottom: 1px solid transparent; }
   nav.toc a:hover { border-bottom-color: var(--accent); }
+  nav.toc a.faq-link {
+    color: var(--accent); text-decoration: underline;
+    text-underline-offset: 3px; border-bottom: 0;
+  }
+  nav.toc a.faq-link:hover { text-decoration-thickness: 2px; }
   nav.toc .done::after { content: " ✓"; color: var(--ok); font-weight: 700; }
   nav.toc .todo { color: var(--muted); }
   section { margin: 0 0 56px; scroll-margin-top: 20px; }
@@ -122,9 +127,10 @@
 <nav class="toc">
   <h2>Graduate projects</h2>
   <ol>
-    <li><a href="projects/manufacturing-cell/">Verified regulation management for a manufacturing cell</a></li>
-    <li><a href="projects/robot-fleet/">Verified regulation management for a mobile robot fleet</a></li>
+    <li><a href="projects/manufacturing-cell/">Verified regulation management for a manufacturing cell</a> — <a class="faq-link" href="faq/manufacturing-cell.html">Student FAQ</a></li>
+    <li><a href="projects/robot-fleet/">Verified regulation management for a mobile robot fleet</a> — <a class="faq-link" href="faq/robot-fleet.html">Student FAQ</a></li>
   </ol>
+  <p><a class="faq-link" href="faq/">Choose a student FAQ</a></p>
 </nav>
 
 <section id="l1">

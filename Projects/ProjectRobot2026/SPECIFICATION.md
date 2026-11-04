@@ -1,5 +1,7 @@
 # Verified Regulation Management for a Mobile Robot Fleet (P + PObserve)
 
+**Questions about this project?** Read the [Robot Fleet Student FAQ](../../faq/robot-fleet.html) (source on GitHub: [`docs/faq/robot-fleet.md`](https://github.com/perkusic/P-Language/blob/main/docs/faq/robot-fleet.md)).
+
 Graduate project specification · Oct 20, 2026 · Angelo
 
 ## Repository and access

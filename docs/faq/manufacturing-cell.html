@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Student FAQ — manufacturing cell</title>
+<style>
+:root{color-scheme:light dark;--bg:#fff;--fg:#182c3a;--muted:#526371;--line:#d5dfe5;--soft:#f3f7fa;--accent:#1763aa}
+@media(prefers-color-scheme:dark){:root{--bg:#191d22;--fg:#e7edf3;--muted:#b2bfca;--line:#45515c;--soft:#242c34;--accent:#89c4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}main{max-width:940px;margin:auto;padding:32px 24px 72px}h1{font-size:clamp(1.8rem,5vw,2.65rem);line-height:1.18;letter-spacing:-.025em}h2{font-size:1.35rem;line-height:1.3;margin:42px 0 15px;scroll-margin-top:24px}p,li{max-width:80ch}a{color:var(--accent);text-underline-offset:3px}code{background:var(--soft);padding:.1em .3em;border-radius:4px;font-size:.9em;overflow-wrap:anywhere}summary{padding:18px 20px;font-weight:650;cursor:pointer;line-height:1.45}details{border:1px solid var(--line);border-radius:10px;margin:12px 0;background:var(--bg)}details[open] summary{border-bottom:1px solid var(--line);background:var(--soft);border-radius:10px 10px 0 0}.answer{padding:2px 20px 12px}.controls{padding:20px;background:var(--soft);border:1px solid var(--line);border-radius:12px;margin-top:30px}label{display:block;font-weight:650;margin-bottom:8px}input{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:10px 12px}.tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px}#count{color:var(--muted);margin-right:auto}button{font:inherit;font-size:.88rem;color:var(--accent);border:1px solid var(--line);border-radius:6px;background:var(--bg);padding:7px 10px;cursor:pointer}nav{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:.9rem;margin-top:18px}a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:3px}table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{text-align:left;vertical-align:top;border:1px solid var(--line);padding:10px}th{background:var(--soft)}.table-wrap{overflow:auto}footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}[hidden]{display:none!important}@media print{.controls,nav{display:none}.answer{display:block!important}details{break-inside:avoid}}@media(max-width:500px){main{padding:24px 16px 48px}summary{padding:16px}.answer{padding:2px 16px 10px}}
+</style></head><body><main><h1>Student FAQ: Manufacturing cell</h1>
+<p>Questions and answers for the manufacturing cell project.</p>
+<p>This FAQ explains the starter kit. The specification and assignment define the assessed work; this page adds no new requirements. Expected experimental results remain hypotheses until your team records evidence.</p>
+<p><a href="../projects/manufacturing-cell/index.html">Open the project specification</a> · <a href="../index.html">P tutorial</a> · <a href="index.html">Choose a different FAQ</a></p>
+<div class="controls"><label for="search">Find a question</label><input type="search" id="search" placeholder="Try: technician, commit, S4…" autocomplete="off"><div class="tools"><span id="count" role="status">30 questions</span><button type="button" id="expand">Open all answers</button><button type="button" id="collapse">Close all answers</button></div></div><nav aria-label="FAQ topics"><a href="#getting-started">Getting started</a><a href="#agents-norms-and-adaptation">Agents, norms and adaptation</a><a href="#manufacturing-cell">Manufacturing cell</a><a href="#running-experiments-and-interpreting-evidence">Running experiments and interpreting evidence</a><a href="#scope-and-submission">Scope and submission</a><a href="#where-to-find-the-detailed-answers">Where to find the detailed answers</a></nav><p id="empty" hidden>No matching questions. Try another word.</p><section class="faq-section"><h2 id="getting-started">Getting started</h2>
+<details class="qa" id="question-which-document-should-i-read-first"><summary>1. Which document should I read first?</summary><div class="answer">
+<p>Read the <a href="https://github.com/perkusic/P-Language/blob/main/Projects/ProjectManufacturingCell2026/ASSIGNMENT.md">assignment</a> for the goals and deliverables, then the
+<a href="https://github.com/perkusic/P-Language/blob/main/Projects/ProjectManufacturingCell2026/ManufacturingCell/INSTRUCTIONS.md">instructions</a> for setup and commands. Use <code>SPECIFICATION.md</code> or the rendered
+specification for the concepts, assumptions and property catalogue. Section 8
+of the specification is authoritative when the assignment summary differs.</p>
+<p>The instructions are under <code>ManufacturingCell/</code>. Keep a record of the revision you use.</p>
+</div></details>
+<details class="qa" id="question-do-i-need-a-github-account"><summary>2. Do I need a GitHub account?</summary><div class="answer">
+<p>No account is needed to read or download the public repository. A local Git
+repository supports commits and checkpoint tags without a GitHub account.
+Follow your instructor&#39;s submission instructions; forking and proposing a
+change on GitHub require an account.</p>
+</div></details>
+<details class="qa" id="question-am-i-building-a-real-robot-controller"><summary>3. Am I building a real robot controller?</summary><div class="answer">
+<p>The core task is to model and verify the <strong>regulation layer</strong> and check recorded
+executions. Motion planning, robot hardware and physical safeguarding are
+outside the starter models. A simulation or deployment platform may provide
+logs for the run-time part, but it does not turn the P model into a physical
+controller or a safety certification.</p>
+</div></details>
+<details class="qa" id="question-must-i-implement-jason-moise-cartago-or-a-bdi-interpreter"><summary>4. Must I implement Jason, Moise, CArtAgO or a BDI interpreter?</summary><div class="answer">
+<p>The P starter kits do not run those platforms or implement a BDI interpreter.
+They use state machines to abstract externally visible behavior. Study the
+platforms to understand the agent, environment and organization concepts;
+implement a platform-based extension only when it is part of your chosen work.</p>
+</div></details>
+</section><section class="faq-section"><h2 id="agents-norms-and-adaptation">Agents, norms and adaptation</h2>
+<details class="qa" id="question-why-is-this-a-multiagent-system-if-a-coordinator-is-centralized"><summary>5. Why is this a multiagent system if a coordinator is centralized?</summary><div class="answer">
+<p>The domain agents pursue their tasks and interact through resource requests
+and obligations. A multiagent system can have shared centralized services.
+Autonomy concerns the choices an agent makes; it does not require every
+component to be decentralized.</p>
+</div></details>
+<details class="qa" id="question-is-every-p-machine-an-agent"><summary>6. Is every P machine an agent?</summary><div class="answer">
+<p>No. <code>CellAgent</code> represents the AGV or the robot arm. <code>ResourceGuard</code> represents
+an environment controller; <code>ObligationManager</code> and <code>AdaptationCoordinator</code>
+represent organizational services; <code>Clock</code> represents infrastructure.
+<code>HumanRequester</code> abstracts a person&#39;s participation. A machine is a modeling
+construct, not automatically an autonomous software agent.</p>
+</div></details>
+<details class="qa" id="question-what-is-centralized-and-what-is-distributed"><summary>7. What is centralized and what is distributed?</summary><div class="answer">
+<p>The cell has one resource guard, one adaptation coordinator and one obligation manager. Admission, adaptation and sanctioning are centralized. The baseline does not model failure of those services.</p>
+</div></details>
+<details class="qa" id="question-what-is-the-difference-between-regimentation-and-sanctioning"><summary>8. What is the difference between regimentation and sanctioning?</summary><div class="answer">
+<p>Regimentation prevents a prohibited action through the controller: a guard
+denies admission when the zone is closed or full. This relies on agents obeying
+the access protocol. Sanctioning reacts to an unfulfilled obligation, such as
+a job not reported by its deadline. A sanction resolves the obligation&#39;s
+record; it does not complete the job.</p>
+</div></details>
+<details class="qa" id="question-does-a-monitor-stop-a-robot-or-block-an-admission"><summary>9. Does a monitor stop a robot or block an admission?</summary><div class="answer">
+<p>No. The guard enforces admission. Monitors observe events and report property
+violations. PObserve evaluates logs; a PObserve check of a log does not physically
+stop, isolate or move equipment.</p>
+</div></details>
+<details class="qa" id="question-what-do-prepare-drain-and-commit-mean"><summary>10. What do prepare, drain and commit mean?</summary><div class="answer">
+<p>For a requested closure, the affected guard stops granting new reservations,
+waits for existing reservations to clear, acknowledges preparation and waits
+for the commit. The coordinator commits after collecting acknowledgements.
+The cell baseline has one guard, which blocks new requests while preparing a closure.
+The protocol is a prepare–drain–commit barrier, not a full database two-phase
+commit implementation with all its failure and recovery mechanisms.</p>
+</div></details>
+<details class="qa" id="question-does-commit-mean-that-every-guard-has-installed-the-new-rules"><summary>11. Does commit mean that every guard has installed the new rules?</summary><div class="answer">
+<p>No. The coordinator announces the decision, sends commit messages and notifies
+the requester. Different recipients can process these messages in different
+orders. Under the two-phase policy, during a closure the affected guard denies requests in <code>AwaitCommit</code>,
+so it remains blocked even if the person processes the notification before
+that guard installs the new norm set. The person reacts to <code>eAdaptationDone</code>,
+not to the monitor announcement. Under the naive policy (<code>twoPhase = false</code>),
+there is no prepare phase: the guard can still admit agents under the old
+version after notification. This is the failure E2 asks you to explain.</p>
+</div></details>
+<details class="qa" id="question-does-enter-mean-that-a-robot-has-physically-crossed-a-boundary"><summary>12. Does ENTER mean that a robot has physically crossed a boundary?</summary><div class="answer">
+<p>In the starter model, <code>eResourceEntered</code> records a reservation before the grant
+is delivered. It is not a sensor-confirmed crossing. A physical realization
+must reserve before entry. It releases resource 0 only after the AGV has fully
+left it, or after all of the arm&#39;s moving parts have retracted outside it. The
+fixed base never enters resource 0. A stopped pose inside is not a release.
+See the <a href="../projects/manufacturing-cell/index.html#6-the-system-a-regulated-manufacturing-cell">Section 6 event contract</a>. Preparation acknowledgement inherits this assumption: an empty set
+of reservations is not an independent sensor measurement.</p>
+</div></details>
+<details class="qa" id="question-what-is-the-difference-between-safety-and-liveness"><summary>13. What is the difference between safety and liveness?</summary><div class="answer">
+<p>A safety property rules out a forbidden event or state, such as conflicting
+occupancy. A liveness property requires eventual progress, such as resolution
+of an obligation. Blocking all admissions can protect an occupancy property
+while preventing useful progress. Evaluate both, and state the assumptions
+needed for each.</p>
+</div></details>
+</section><section class="faq-section"><h2 id="manufacturing-cell">Manufacturing cell</h2>
+<details class="qa" id="question-what-exactly-is-resource-0"><summary>14. What exactly is resource 0?</summary><div class="answer">
+<p>It is the <strong>shared transfer zone</strong> around the material stand, with capacity 1
+for agent reservations. It is not the whole cell or the arm&#39;s complete reachable
+workspace. The fixed robot base and all retracted moving parts stay outside
+that boundary. The stand and a stationary part are not counted as agents.
+See Figures 1 and 14 and Section 6 of the cell specification.</p>
+</div></details>
+<details class="qa" id="question-how-can-the-agv-and-the-arm-exchange-material-if-capacity-is-1"><summary>15. How can the AGV and the arm exchange material if capacity is 1?</summary><div class="answer">
+<p>They use the zone in turn. The proposed physical interpretation is that the
+AGV deposits material on a fixed stand and leaves completely before the arm
+uses the zone. The baseline does not model direct loading onto an AGV that
+remains inside, pallet handling or production precedence. Its two jobs are
+abstract resource-use jobs.</p>
+</div></details>
+<details class="qa" id="question-where-does-the-agv-wait-and-where-is-it-charged"><summary>16. Where does the AGV wait, and where is it charged?</summary><div class="answer">
+<p>It approaches from an external logistics route and waits outside resource 0.
+The figure identifies that holding point. Battery charging, travel outside
+the cell and detailed return routes are outside the model; the starter kit
+does not choose or simulate a charging station.</p>
+</div></details>
+<details class="qa" id="question-is-the-technician-maintaining-the-robot-arm"><summary>17. Is the technician maintaining the robot arm?</summary><div class="answer">
+<p>The chosen scenario is intervention at the transfer stand or a misplaced part
+inside resource 0. Maintenance of the robot itself is excluded. Adopting arm
+maintenance would require reconsidering occupancy and intervention conditions,
+rather than simply reusing the current exclusion property.</p>
+</div></details>
+<details class="qa" id="question-is-logical-closure-a-physical-lock-outtag-out-procedure"><summary>18. Is logical closure a physical lock-out/tag-out procedure?</summary><div class="answer">
+<p>No. The inherited lock-out names in the code refer to logical admission
+closure. The model does not implement energy isolation, personal locks,
+stored-energy control or verification of isolation. A physical stop also does
+not prove that the transfer zone is empty or complete the drain.</p>
+</div></details>
+<details class="qa" id="question-why-do-two-technicians-need-an-additional-protocol"><summary>19. Why do two technicians need an additional protocol?</summary><div class="answer">
+<p>Serializing changes does not record who still needs the zone closed. Without
+additional state, one technician&#39;s reopening request can reopen it while the
+other remains inside. E4 asks teams to analyze this and add S4 and a correction.
+S4 concerns reopening with a person present; S1 additionally requires conflicting
+agent reservation or human entry. Reopening alone is not an S1 event.</p>
+</div></details>
+</section><section class="faq-section"><h2 id="running-experiments-and-interpreting-evidence">Running experiments and interpreting evidence</h2>
+<details class="qa" id="question-is-a-failed-baseline-test-always-a-mistake-in-my-setup"><summary>20. Is a failed baseline test always a mistake in my setup?</summary><div class="answer">
+<p>No. The naive-policy test is intended to expose a safety or version-consistency violation (S1 or S2).
+A compiler error or missing dependency is a tool or setup failure,
+not evidence of the expected property violation. Read the assertion and trace.</p>
+</div></details>
+<details class="qa" id="question-what-should-i-save-for-each-run"><summary>21. What should I save for each run?</summary><div class="answer">
+<p>Record the source revision and local changes, exact command, tool versions,
+scheduling strategy, seed, requested and completed schedule counts, time/step
+limits and output. Save counterexample traces and replay information. Write
+your prediction before running, then explain whether the observed result
+supports or contradicts it.</p>
+</div></details>
+<details class="qa" id="question-does-no-bug-found-prove-correctness"><summary>22. Does “no bug found” prove correctness?</summary><div class="answer">
+<p>No. It reports no violation in the executions explored under that configuration
+and those limits. Report the <strong>completed</strong> count, especially if a timeout
+stopped the run. E1 requests 100,000 schedules; a shorter exploratory run does
+not meet that acceptance target. Passing that target still does not establish
+physical safety or correctness for every possible configuration.</p>
+</div></details>
+<details class="qa" id="question-why-must-i-test-a-monitor-with-a-mutant"><summary>23. Why must I test a monitor with a mutant?</summary><div class="answer">
+<p>A passing monitor may never have observed a relevant event or may fail to
+express the intended property. A deliberately faulty model or log provides
+a case that should fail. Explain which assertion detects it and report event
+coverage for passing runs. Do not weaken an assertion just to make a test pass.</p>
+</div></details>
+<details class="qa" id="question-can-l1-hold-even-if-no-job-succeeds"><summary>24. Can L1 hold even if no job succeeds?</summary><div class="answer">
+<p>Yes. <code>EveryObligationResolved</code> accepts fulfillment <strong>or sanction</strong>. The starter
+clock emits a final far-future tick that causes every open obligation to be
+sanctioned, provided the obligation manager processes it. L1 can therefore
+hold without a successful job; it is not evidence of task completion
+(<a href="../projects/manufacturing-cell/index.html#511-sanity-and-vacuity-checks">Section 5.11</a>).
+R1 checks the deadline bound on logs. Successful job counts, waiting times
+and sanction counts are separate measures.</p>
+</div></details>
+<details class="qa" id="question-what-does-r3-establish-and-what-does-s2-establish"><summary>25. What does R3 establish, and what does S2 establish?</summary><div class="answer">
+<p>R3 checks that human entry follows a committed closure of that resource; it
+does not check emptiness. In the unchanged starter model, the person waits for
+<code>eAdaptationDone</code>, so R3 holds by construction. Logs can expose procedure
+bypass, and a requester that enters without waiting is a useful mutant
+(<a href="../projects/manufacturing-cell/index.html#511-sanity-and-vacuity-checks">Section 5.11</a>). S1 checks conflicting occupancy, using agent reservations and recorded human presence.
+S2 checks sequential commits and admission against the last committed closed
+set. It does not observe installation at each guard or reject every use of an
+older version as a general rule. This baseline has a single guard: closing or
+reopening resource 0 affects that guard. No other guard keeps serving an open
+zone under an older version.</p>
+</div></details>
+<details class="qa" id="question-how-are-l2-l3-and-r2-different"><summary>26. How are L2, L3 and R2 different?</summary><div class="answer">
+<p>L2 requires an adaptation to commit. L3 allows it to terminate by commit or
+explicit abort. R2 checks termination within a configured number of logged
+ticks and accepts an abort as termination. An abort can therefore satisfy
+L3 and R2 without satisfying L2. Abort handling is an experiment to implement,
+not an existing recovery feature of the baseline coordinator.</p>
+<p>The cell assignment requires calibration of R2 over the whole start-to-commit
+interval, including protocol delay; with an abort extension, also account for
+start-to-abort time. Explain why an observed maximum is not a universal bound. Finite logs ending before a bound expires remain inconclusive
+about the missing future response.</p>
+</div></details>
+<details class="qa" id="question-is-the-python-simulator-equivalent-to-pobserve"><summary>27. Is the Python simulator equivalent to PObserve?</summary><div class="answer">
+<p>No. <code>simulate_logs.py --check</code> generates synthetic events and evaluates a
+Python mirror of selected monitors. P checks the P model and specifications;
+PObserve checks parsed logs against generated monitors. Report each result
+under the tool that actually produced it. Generating Java classes with
+<code>p compile --mode pobserve</code> is not a Java build, a JUnit run or a PObserve replay.</p>
+</div></details>
+<details class="qa" id="question-what-if-pobserve-reports-a-violation-on-a-real-or-simulated-log"><summary>28. What if PObserve reports a violation on a real or simulated log?</summary><div class="answer">
+<p>Check both the system behavior and the recording: event meanings, required
+fields, partition key, completeness and ordering. A premature <code>LEAVE</code> can hide
+a real conflict; a missing <code>LEAVE</code> can create an apparent one. Clock skew can
+change the order of events from different sources. Keep the original log and
+explain the evidence for a system fault versus a logging defect.</p>
+</div></details>
+</section><section class="faq-section"><h2 id="scope-and-submission">Scope and submission</h2>
+<details class="qa" id="question-must-i-implement-every-experiment-and-optional-extension"><summary>29. Must I implement every experiment and optional extension?</summary><div class="answer">
+<p>Follow the requirements and work plan of your chosen specification. Experiment numbers identify the changes in this project. Do not treat the
+presence of a proposed extension, such as JaCaMo instrumentation
+or separating grants from confirmed crossings and exits, as proof that it is implemented or automatically compulsory.
+State which extensions you chose and what you verified.</p>
+</div></details>
+<details class="qa" id="question-what-makes-a-convincing-report-and-presentation"><summary>30. What makes a convincing report and presentation?</summary><div class="answer">
+<p>Connect each claim to a norm, a property, a run and its evidence. Explain a
+counterexample in event order, identify its root cause and compare the behavior
+before and after your change. Distinguish model checking from log monitoring,
+sanction resolution from task completion, and declared assumptions from
+verified results. Include limitations and each member&#39;s contribution, following
+the deliverable format and rubric in your specification.</p>
+</div></details>
+</section><section class="faq-section"><h2 id="where-to-find-the-detailed-answers">Where to find the detailed answers</h2>
+<ul>
+<li><a href="../projects/manufacturing-cell/index.html#6-the-system-a-regulated-manufacturing-cell">Physical scenario and event contract: Section 6</a></li>
+<li><a href="../projects/manufacturing-cell/index.html#7-technical-specification">Monitors and experiments: Section 7</a></li>
+<li><a href="../projects/manufacturing-cell/index.html#8-work-plan-and-deliverables">Deliverables and grading: Section 8</a></li>
+</ul>
+</section><footer><a href="manufacturing-cell.md">Read the Markdown source</a> · <a href="../index.html">Back to the P tutorial and projects</a></footer></main>
+<script>
+if(document.querySelector('#search')){
+const questions=[...document.querySelectorAll('.qa')],search=document.querySelector('#search'),count=document.querySelector('#count');
+const clean=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const sections=[...document.querySelectorAll('.faq-section')];
+let preSearch=null;
+search.addEventListener('input',()=>{
+const term=clean(search.value.trim());
+if(term&&!preSearch)preSearch=new Map(questions.map(q=>[q.id,q.open]));
+let matches=0;
+questions.forEach(q=>{q.hidden=Boolean(term)&&!clean(q.textContent).includes(term);if(!q.hidden){matches++;if(term)q.open=true;else if(preSearch)q.open=preSearch.get(q.id)===true;}});
+sections.forEach(section=>{section.hidden=Boolean(term)&&![...section.querySelectorAll('.qa')].some(q=>!q.hidden);const link=document.querySelector('nav a[href="#'+section.querySelector('h2').id+'"]');if(link)link.hidden=section.hidden;});
+if(!term)preSearch=null;
+count.textContent=term?matches+' of '+questions.length+' questions':questions.length+' questions';document.querySelector('#empty').hidden=matches>0;
+});
+document.querySelector('#expand').addEventListener('click',()=>questions.filter(q=>!q.hidden).forEach(q=>q.open=true));
+document.querySelector('#collapse').addEventListener('click',()=>questions.forEach(q=>q.open=false));
+function revealHash(){const item=document.getElementById(location.hash.slice(1));if(item?.classList.contains('qa')){if(item.hidden){search.value='';search.dispatchEvent(new Event('input'));}item.open=true;}}
+addEventListener('hashchange',revealHash);revealHash();
+addEventListener('beforeprint',()=>questions.forEach(q=>{q.dataset.wasOpen=String(q.open);q.open=true;}));addEventListener('afterprint',()=>questions.forEach(q=>{q.open=q.dataset.wasOpen==='true';}));
+}
+</script></body></html>
