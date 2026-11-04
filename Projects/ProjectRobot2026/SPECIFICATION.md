@@ -1151,8 +1151,9 @@ The expected outcomes are **hypotheses** derived from the design. They are consi
 | E7 | Excusing obligations (remedy 2): deadlines suspended while the regulation blocks a robot, and obligations abandoned because of a closure excused | Does F1 hold for regulation-caused cases, and at what cost? | suspension alone: F1 still fails; with excusal: no regulation-caused case | refined monitor reports no regulation-caused case; safety monitors and L1 hold | 10,000 | outputs before and after; cost in L1 (checker) and in sanction counts (PObserve) |
 | E8 | Scale: 3–4 robots or 4–5 zones | Where does exploration stop scaling? | run time grows rapidly | run times reported per size | as feasible | table of sizes and times |
 | E9 | Prepare timeout and abort: the coordinator aborts if the zone does not drain within k ticks | Does every adaptation terminate without parking (L3), and are S1 and S2 preserved? | L3 holds; L2 fails by design for an aborted change, which is not installed (it remains in its hot state or, if the change is retried, reports a new start before the previous commit); S1 and S2 preserved; the picker is refused | prediction confirmed or refuted; acceptance cases: a timeout followed by `ADAPT_ABORT` satisfies L3; a prepare that is neither committed nor aborted violates L3; an aborted prepare never admits the picker and leaves no controller blocked | 10,000 | traces and discussion |
+| E10 | Finite side bays: model each bay as a `ResourceGuard` that is never closed (resource ids 3–5, added to the `eMonitorConfig` capacity map but not to the coordinator's controller list); after three denials the robot requests the bay of its current zone and releases the zone only when the bay admits it, and otherwise keeps its zone and retries. Variants: (a) one bay of capacity 1 per zone; (b) bays only at the corridor ends, none at zone 1; (c) variant (b) combined with E4 | Do the results that assumed parking ([Section 7.6](#76-modeling-assumptions-and-threats-to-validity)) still hold when bays are finite and placed? | (a) as E1; (b) L2 still holds, because the robot in zone 2 can park and clear the way; (c) L2 violated: the robot in zone 1 can neither advance nor park | each variant's prediction confirmed or refuted with a trace or run summary; the bay row of [Section 7.6](#76-modeling-assumptions-and-threats-to-validity) revised with the result | 10,000 | modified model, traces or run summaries, revised assumption row |
 
-Predictions are recorded before each run. The identifiers E0–E9 are also used in the assignment and in the instructions.
+Predictions are recorded before each run. The identifiers E0–E10 are also used in the assignment and in the instructions.
 
 **Stretch goal: refinement (research question 3).** An abstract centralized regulator is specified as a single machine holding the state of the entire corridor. It is then shown, either by refinement testing or by means of P's module system, that the three distributed controllers together with the coordinator behave as this regulator. Such a result would turn the architectural-style axis of the unified view into a verified claim.
 
@@ -1189,7 +1190,7 @@ Each line is prefixed with a UTC timestamp of microsecond precision. `Site` serv
 | Must | The PObserve package builds; the safety and fairness JUnit tests pass on the sample logs |
 | Must | The report states the modeling assumptions and the threats to validity ([Section 7.6](#76-modeling-assumptions-and-threats-to-validity)) |
 | Should | E4 and E5; the fault-injection runs of [Section 7.4](#74-run-time-part-pobserve); an order-insensitive refinement of F1 |
-| Could | E8 and E9; the second remedy; the refinement stretch goal; ROS 2 instrumentation and a run on its logs |
+| Could | E8, E9 and E10; the second remedy; the refinement stretch goal; ROS 2 instrumentation and a run on its logs |
 
 ### 7.6 Modeling assumptions and threats to validity
 
@@ -1203,7 +1204,7 @@ Every result of the project holds relative to the model and to the logs. The fol
 | Messages between two machines arrive in order; different senders interleave arbitrarily | ROS 2 topics with suitable QoS; arbitrary delays | over-approximation of delays | S1, S2 |
 | Zone moves are discrete; a robot holds its zone until the next is granted | continuous motion; a robot occupies two zones while crossing a boundary | abstraction | S1, deadlock |
 | Robots start outside the corridor and enter only at its ends; stations, loads, batteries and return trips are not modeled | robots come from charging and loading areas, may run low on battery and re-enter after a delivery | abstraction | L1, F1 counts |
-| A robot that gives up leaves its zone at once into a side bay that is reachable from that zone without entering another zone and is always free; a parked robot never returns | bays have finite capacity, may be occupied or exist only at the corridor ends; leaving a zone takes time; parked robots re-enter | under-approximation | L2 with parking, E4, E5, F1 counts |
+| A robot that gives up leaves its zone at once into a side bay that is reachable from that zone without entering another zone and is always free; a parked robot never returns | bays have finite capacity, may be occupied or exist only at the corridor ends; leaving a zone takes time; parked robots re-enter | under-approximation | L2 with parking, E4, E5, F1 counts; examined in E10 |
 | The picker waits for the commit before entering | people may enter without permission | under-approximation | R3, S1 |
 | Light curtains and badge readers detect every person | sensors fail | under-approximation | S1, R3 |
 | Logical ticks; deadlines in ticks | physical time and clock drift | abstraction | L1, R1, R2 |
